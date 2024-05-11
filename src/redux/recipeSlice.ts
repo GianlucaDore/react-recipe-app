@@ -1,16 +1,15 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from './store';
-import { Recipe, UserInfo } from './storetypes';
-import { fetchRecipes, fetchRecipesBatch } from './thunks';
+import { RecipeState } from './storetypes';
+import { fetchRecipesBatch, fetchSingleRecipe, fetchTotalNumberOfPagesInHome } from './thunks';
 
-interface RecipeState {
-    user: UserInfo | null;
-    recipesDisplayed: Array<Recipe> | null;
-}
 
 const initialState: RecipeState = {
     user: null,
-    recipesDisplayed: null
+    recipesDisplayed: [],
+    recipesPerPage: 3,
+    numberOfPages: 1,
+    currentRecipe: null
 }
 
 export const recipeSlice = createSlice({
@@ -23,15 +22,15 @@ export const recipeSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchRecipes.pending, () => {
-                console.log("Promise fetchRecipes is pending.");
+            .addCase(fetchTotalNumberOfPagesInHome.pending, () => {
+                console.log("Promise fetchTotalNumberOfPagesInHome is pending.");
             })
-            .addCase(fetchRecipes.rejected, (_, action) => {
-                console.error("Promise fetchRecipes was rejected with error: ", action.payload);
+            .addCase(fetchTotalNumberOfPagesInHome.rejected, (_, action) => {
+                console.error("Promise fetchTotalNumberOfPagesInHome was rejected with error: ", action.payload);
             })
-            .addCase(fetchRecipes.fulfilled, (state, action) => {
-                console.log("Retrieved recipes (Promise fulfilled).");
-                state.recipesDisplayed = action.payload;
+            .addCase(fetchTotalNumberOfPagesInHome.fulfilled, (state, action) => {
+                // console.log("Retrieved total number of pages for Home component (Promise fulfilled).");
+                state.numberOfPages = action.payload;
             })
             .addCase(fetchRecipesBatch.pending, () => {
                 console.log("Promise fetchRecipesBatch is pending.");
@@ -43,6 +42,16 @@ export const recipeSlice = createSlice({
                 console.log("Retrieved requested batch of recipes (Promise fulfilled).");
                 state.recipesDisplayed = action.payload;
             })
+            .addCase(fetchSingleRecipe.pending, () => {
+                console.log("Promise fetchSingleRecipe is pending.");
+            })
+            .addCase(fetchSingleRecipe.rejected, (_, action) => {
+                console.error("Promise fetchSingleRecipe was rejected with error: ", action.payload);
+            })
+            .addCase(fetchSingleRecipe.fulfilled, (state, action) => {
+                console.log("Retrieved requested batch of recipes (Promise fulfilled).");
+                state.currentRecipe = action.payload;
+            })
 
     }
 })
@@ -50,7 +59,8 @@ export const recipeSlice = createSlice({
 
 export const getUser = (state: RootState) => state.recipe.user;
 export const getRecipesDisplayed = (state: RootState) => state.recipe.recipesDisplayed;
-
+export const getNumberOfRecipesToDisplayInHome = (state: RootState) => state.recipe.recipesPerPage;
+export const getNumberOfPagesInHome = (state: RootState) => state.recipe.numberOfPages;
 
 export const { setUser } = recipeSlice.actions;
 

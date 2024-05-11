@@ -18,3 +18,11 @@ export interface Recipe {
     preparation: string;
     chef: string;
 }
+
+export interface RecipeState {
+    user: UserInfo | null;
+    recipesDisplayed: Array<Recipe>;
+    recipesPerPage: number;
+    numberOfPages: number;
+    currentRecipe: Recipe | null;
+}

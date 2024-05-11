@@ -2,17 +2,20 @@ import { Box, Grid } from '@mui/material';
 import { RecipeOfTheDay } from "../components/RecipeOfTheDay";
 import { RecipeAppBar } from "../components/RecipeAppBar";
 import { RecipesList } from '../components/RecipesList';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppDispatch } from '../redux/hooks';
-import { fetchRecipes } from '../redux/thunks';
+import { fetchRecipesBatch, fetchTotalNumberOfPagesInHome } from '../redux/thunks';
 
 export const RecipeHome = () => {
 
     const dispatch = useAppDispatch();
 
+    const [pageNumber, setPageNumber] = useState(1);
+
     useEffect(() => {
-        dispatch(fetchRecipes());
-    }, [])
+        dispatch(fetchRecipesBatch(pageNumber));
+        dispatch(fetchTotalNumberOfPagesInHome());
+    }, [pageNumber]);
 
 
     return (
@@ -24,7 +27,7 @@ export const RecipeHome = () => {
                         <RecipeOfTheDay />
                     </Grid>
                     <Grid container spacing={1} justifyContent="center" alignItems="center">
-                        <RecipesList />
+                        <RecipesList pageState={{ pageNumber: pageNumber, setPageNumber: setPageNumber }} />
                     </Grid>
                 </Grid >
             </Box>
