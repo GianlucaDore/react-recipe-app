@@ -61,6 +61,7 @@ export const getUser = (state: RootState) => state.recipe.user;
 export const getRecipesDisplayed = (state: RootState) => state.recipe.recipesDisplayed;
 export const getNumberOfRecipesToDisplayInHome = (state: RootState) => state.recipe.recipesPerPage;
 export const getNumberOfPagesInHome = (state: RootState) => state.recipe.numberOfPages;
+export const getCurrentRecipe = (state: RootState) => state.recipe.currentRecipe;
 
 export const { setUser } = recipeSlice.actions;
 

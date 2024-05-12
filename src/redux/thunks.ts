@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { db } from "../firebase/auth/firebase";
-import { collection, doc, getCountFromServer, getDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, getCountFromServer, getDoc } from "firebase/firestore";
 import { Recipe } from "./storetypes";
 import { RootState } from "./store";
 
@@ -78,18 +78,27 @@ export const fetchRecipesBatch = createAsyncThunk('recipe/fetchRecipesBatch',
 )
 
 export const fetchSingleRecipe = createAsyncThunk('recipe/fetchSingleRecipe',
-    async (recipeTitle) => {
-        const singleRecipeRef = collection(db, "Recipes");
-        const singleRecipeQuery = query(singleRecipeRef, where("title", "==", recipeTitle));
+    async (recipeId: string) => {
+        const singleRecipeRef = doc(db, "Recipes", recipeId);
+        const singleRecipeSnap = await getDoc(singleRecipeRef);
 
-        const singleRecipeQuerySnapshot = await getDocs(singleRecipeQuery);
-
-        if (!singleRecipeQuerySnapshot.empty) {
-            const singleRecipeRetrieved = singleRecipeQuerySnapshot.docs[0].data() as Recipe;
-            return singleRecipeRetrieved;
+        try {
+            let recipeData = singleRecipeSnap.data();
+            if (recipeData !== undefined) {
+                let recipeObject = <Recipe>{
+                    id: recipeData.id,
+                    title: recipeData.title,
+                    ingredients: recipeData.ingredients,
+                    preparation: recipeData.preparation,
+                    chef: recipeData.chef
+                }
+                return recipeObject;
+            }
+            else throw new Error("Can't retrieve the requested recipe with id " + recipeId);
         }
-        else {
-            throw new Error('Recipe requested was not found.');
+        catch (error) {
+            console.error("Can't retrieve the requested recipe. Error: " + error);
+            return null;
         }
     }
 )
