@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from './store';
 import { RecipeState } from './storetypes';
-import { fetchRecipesBatch, fetchSingleRecipe, fetchTotalNumberOfPagesInHome } from './thunks';
+import { fetchRecipesBatch, fetchSearchResults, fetchSingleRecipe, fetchTotalNumberOfPagesInHome } from './thunks';
 
 
 const initialState: RecipeState = {
@@ -9,7 +9,8 @@ const initialState: RecipeState = {
     recipesDisplayed: [],
     recipesPerPage: 3,
     numberOfPages: 1,
-    currentRecipe: null
+    currentRecipe: null,
+    searchResults: null
 }
 
 export const recipeSlice = createSlice({
@@ -52,6 +53,16 @@ export const recipeSlice = createSlice({
                 console.log("Retrieved requested batch of recipes (Promise fulfilled).");
                 state.currentRecipe = action.payload;
             })
+            .addCase(fetchSearchResults.pending, () => {
+                console.log("Promise fetchSearchResults is pending.");
+            })
+            .addCase(fetchSearchResults.rejected, (_, action) => {
+                console.error("Promise fetchSearchResults was rejected with error: ", action.payload);
+            })
+            .addCase(fetchSearchResults.fulfilled, (state, action) => {
+                console.log("Retrieved search results (Promise fulfilled).");
+                state.searchResults = action.payload;
+            })
 
     }
 })
@@ -62,6 +73,7 @@ export const getRecipesDisplayed = (state: RootState) => state.recipe.recipesDis
 export const getNumberOfRecipesToDisplayInHome = (state: RootState) => state.recipe.recipesPerPage;
 export const getNumberOfPagesInHome = (state: RootState) => state.recipe.numberOfPages;
 export const getCurrentRecipe = (state: RootState) => state.recipe.currentRecipe;
+export const getSearchResults = (state: RootState) => state.recipe.searchResults;
 
 export const { setUser } = recipeSlice.actions;
 

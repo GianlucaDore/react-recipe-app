@@ -2,6 +2,7 @@ import { Box, Card, CardActionArea, CardContent, CardMedia, CircularProgress, Gr
 import { useAppSelector } from "../redux/hooks";
 import { getNumberOfPagesInHome, getRecipesDisplayed } from "../redux/recipeSlice";
 import { Recipe } from "../redux/storetypes";
+import { useNavigate } from "react-router";
 
 interface RecipesListPropsObject {
     pageNumber: number;
@@ -48,12 +49,15 @@ interface RecipeItemProps {
     recipe: Recipe
 }
 
-const RecipeItem = (props: RecipeItemProps) => {
+export const RecipeItem = (props: RecipeItemProps) => {
     const recipe = props.recipe;
+
+    const navigate = useNavigate();
+
     return (
         <Box display="flex" justifyContent="center">
             <Card sx={{ width: "90%", height: "200px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-                <CardActionArea sx={{ display: "flex", height: "100%", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+                <CardActionArea onClick={() => navigate(`/recipe/${recipe.id}`)} sx={{ display: "flex", height: "100%", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
                     {recipe ? (
                         <CardMedia component="img" height="140" image="./recipeplaceholder" alt="recipe placeholder" />
                     ) : (

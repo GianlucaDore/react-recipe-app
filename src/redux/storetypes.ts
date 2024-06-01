@@ -14,9 +14,19 @@ export interface UserInfo {
 export interface Recipe {
     id: number;
     title: string;
+}
+
+export type Difficulty = ("Easy" | "Medium" | "Hard" | "?");
+
+
+export interface RecipeDetails extends Recipe {
     ingredients: Array<string>;
     preparation: string;
     chef: string;
+    minutesNeeded: number;
+    difficulty: Difficulty;
+    views: number;
+    likes: number;
 }
 
 export interface RecipeState {
@@ -24,5 +34,6 @@ export interface RecipeState {
     recipesDisplayed: Array<Recipe>;
     recipesPerPage: number;
     numberOfPages: number;
-    currentRecipe: Recipe | null;
+    currentRecipe: RecipeDetails | null;
+    searchResults: Array<Recipe> | null;
 }

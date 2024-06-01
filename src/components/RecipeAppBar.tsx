@@ -1,8 +1,9 @@
-import { useRef, useState, useLayoutEffect } from 'react'
+import React, { useRef, useState, useLayoutEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { getUser } from '../redux/recipeSlice'
 import {
     AppBar,
+    Box,
     Button,
     ClickAwayListener,
     Grow,
@@ -11,16 +12,21 @@ import {
     MenuList,
     Paper,
     Popper,
+    TextField,
     Toolbar,
     Typography,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { useNavigate } from 'react-router'
+import { Search } from '@mui/icons-material'
 
 export const RecipeAppBar = () => {
+
     const [openUserMenu, setOpenUserMenu] = useState(false);
     const [menuWidth, setMenuWidth] = useState<number | null>(null);
+
+    const [searchTerm, setSearchTerm] = useState<string>('');
 
     const iconButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -41,8 +47,13 @@ export const RecipeAppBar = () => {
         }
     }
 
+    const handleSearchSubmit = () => {
+        if (searchTerm !== '')
+            navigate(`/search?term=${searchTerm}`);
+    }
+
     return (
-        <AppBar position="static">
+        <AppBar position="static" sx={{ backgroundColor: "#5C3317" }}>
             <Toolbar>
                 <IconButton
                     size="large"
@@ -56,6 +67,12 @@ export const RecipeAppBar = () => {
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                     Recipe App
                 </Typography>
+                <Box>
+                    <TextField variant="outlined" value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)} />
+                    <Button onClick={handleSearchSubmit}>
+                        <Search />
+                    </Button>
+                </Box>
                 {userLoggedIn ? (
                     <div>
                         <IconButton

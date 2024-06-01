@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { db } from "../firebase/auth/firebase";
-import { collection, doc, getCountFromServer, getDoc } from "firebase/firestore";
-import { Recipe } from "./storetypes";
+import { collection, doc, endAt, getCountFromServer, getDoc, getDocs, orderBy, query, startAt } from "firebase/firestore";
+import { Recipe, RecipeDetails } from "./storetypes";
 import { RootState } from "./store";
 
 /* 
@@ -58,7 +58,7 @@ export const fetchRecipesBatch = createAsyncThunk('recipe/fetchRecipesBatch',
                 let recipeData = recipeSnap.data();
                 if (recipeData) {
                     let recipeObject = <Recipe>{
-                        id: recipeData.id,
+                        id: Number.parseInt(recipeSnap.id),
                         title: recipeData.title,
                         ingredients: recipeData.ingredients,
                         preparation: recipeData.preparation,
@@ -85,12 +85,16 @@ export const fetchSingleRecipe = createAsyncThunk('recipe/fetchSingleRecipe',
         try {
             let recipeData = singleRecipeSnap.data();
             if (recipeData !== undefined) {
-                let recipeObject = <Recipe>{
+                let recipeObject = <RecipeDetails>{
                     id: recipeData.id,
                     title: recipeData.title,
                     ingredients: recipeData.ingredients,
                     preparation: recipeData.preparation,
-                    chef: recipeData.chef
+                    chef: recipeData.chef,
+                    minutesNeeded: recipeData.time,
+                    difficulty: recipeData.difficulty,
+                    views: recipeData.views,
+                    likes: recipeData.likes
                 }
                 return recipeObject;
             }
@@ -100,5 +104,29 @@ export const fetchSingleRecipe = createAsyncThunk('recipe/fetchSingleRecipe',
             console.error("Can't retrieve the requested recipe. Error: " + error);
             return null;
         }
+    }
+)
+
+export const fetchSearchResults = createAsyncThunk('recipe/fetchSearchResults',
+    async (text: string) => {
+
+        const fetchResults = async (searchText: string) => {
+            const recipeRef = collection(db, 'Recipe');
+            const recipeQuery = query(recipeRef, orderBy('title'), startAt(searchText), endAt(searchText + '\uf8ff'));
+            const querySnapshot = await getDocs(recipeQuery);
+            return querySnapshot.docs.map((doc) => {
+                const recipeData = doc.data();
+                return {
+                    id: recipeData.id,
+                    title: recipeData.title
+                }
+            });
+        };
+
+        const searchResultsExactText = await fetchResults(text);
+        const searchResultsWithUppercase = text.charAt(0) !== text.charAt(0).toUpperCase() ? await fetchResults(text.charAt(0).toUpperCase() + text.slice(1)) : [];
+        const searchResultsWithLowercase = text.charAt(0) === text.charAt(0).toUpperCase() ? await fetchResults(text.charAt(0).toLowerCase() + text.slice(1)) : [];
+
+        return [...searchResultsExactText, ...searchResultsWithUppercase, ...searchResultsWithLowercase];
     }
 )

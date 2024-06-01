@@ -5,6 +5,8 @@ import { fetchSingleRecipe } from "../redux/thunks";
 import { getCurrentRecipe } from "../redux/recipeSlice";
 import { RecipeAppBar } from "../components/RecipeAppBar";
 import { Box, CircularProgress, Grid, LinearProgress, List, ListItem, ListItemText, Typography } from "@mui/material";
+import { RecipeStats } from "../components/RecipeStats";
+
 
 export const RecipeSelected = () => {
 
@@ -15,20 +17,21 @@ export const RecipeSelected = () => {
     const recipeData = useAppSelector(getCurrentRecipe);
 
     useEffect(() => {
-        dispatch(fetchSingleRecipe(recipeId));
+        if (recipeId !== undefined)
+            dispatch(fetchSingleRecipe(recipeId));
     }, []);
 
     return (
         <>
-            <Box display="flex" flexDirection="column" height="100vh">
+            <Box display="flex" flexDirection="column" height="100vh" sx={{ backgroundColor: "#FCEFDF" }}>
                 <RecipeAppBar />
                 <Grid container spacing={2} direction="row" flexWrap="nowrap" justifyContent="center" alignItems="center" width="100%" height="100%" margin="0px">
-                    <Grid item xs={12} md={5} height="100%">
+                    <Grid item xs={12} md={3} height="100%">
                         <Box display="flex" flexDirection="column" height="100%">
                             <Box display="flex" flexDirection="row" height="25vh">
                                 <Typography>Recipe</Typography>
                             </Box>
-                            <Box>
+                            <Box textAlign="center">
                                 {recipeData ? (
                                     <List>
                                         {
@@ -44,12 +47,15 @@ export const RecipeSelected = () => {
                             </Box>
                         </Box>
                     </Grid>
+                    <Grid container xs={12} md={2} height="100%" alignItems="center" justifyContent="center">
+                        <RecipeStats minutesNeeded={recipeData ? recipeData.minutesNeeded : NaN} difficulty={recipeData ? recipeData.difficulty : "?"} likes={recipeData ? recipeData.likes : NaN} views={recipeData ? recipeData.views : NaN} />
+                    </Grid>
                     <Grid item xs={12} md={7} justifyContent="center" alignItems="center">
                         <Box display="flex" flexDirection="column" height="100%" overflow="hidden" sx={{ overflowY: "scroll" }} >
                             <Box height="50vh">
                                 <img src="/ricettabase" alt={recipeData?.title} />
                             </Box>
-                            <Box>
+                            <Box border="2px solid brown" padding="20px" borderRadius="17px" sx={{ backgroundColor: "#FFF7EE" }}>
                                 {recipeData ? (
                                     <Typography>{recipeData.preparation}</Typography>
                                 ) : (<CircularProgress />)}
