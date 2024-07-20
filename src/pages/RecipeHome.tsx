@@ -15,7 +15,7 @@ export const RecipeHome = () => {
     useEffect(() => {
         dispatch(fetchRecipesBatch(pageNumber));
         dispatch(fetchTotalNumberOfPagesInHome());
-    }, [pageNumber]);
+    }, [dispatch, pageNumber]);
 
 
     return (

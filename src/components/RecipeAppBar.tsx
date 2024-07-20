@@ -1,6 +1,6 @@
 import React, { useRef, useState, useLayoutEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { getUser } from '../redux/recipeSlice'
+import { getLoggedUser } from '../redux/recipeSlice'
 import {
     AppBar,
     Box,
@@ -20,6 +20,8 @@ import MenuIcon from '@mui/icons-material/Menu'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { useNavigate } from 'react-router'
 import { Search } from '@mui/icons-material'
+import { useAppDispatch } from '../redux/hooks'
+import { fetchLogout } from '../redux/thunks'
 
 export const RecipeAppBar = () => {
 
@@ -30,7 +32,9 @@ export const RecipeAppBar = () => {
 
     const iconButtonRef = useRef<HTMLButtonElement>(null);
 
-    const userLoggedIn = useSelector(getUser);
+    const dispatch = useAppDispatch();
+
+    const userLoggedIn = useSelector(getLoggedUser);
 
     const navigate = useNavigate();
 
@@ -45,6 +49,16 @@ export const RecipeAppBar = () => {
         else {
             setOpenUserMenu((prevState) => !prevState)
         }
+    }
+
+    const handleProfileClick = () => {
+        if (userLoggedIn)
+            navigate(`/user/${userLoggedIn.uid}`);
+    }
+
+    const handleLogoutClick = () => {
+        dispatch(fetchLogout());
+        navigate('/');
     }
 
     const handleSearchSubmit = () => {
@@ -114,8 +128,10 @@ export const RecipeAppBar = () => {
                                                 id="composition-menu"
                                                 aria-labelledby="composition-button"
                                             >
-                                                <MenuItem>Profile</MenuItem>
-                                                <MenuItem>Logout</MenuItem>
+                                                <MenuItem
+                                                    onClick={handleProfileClick}>Profile</MenuItem>
+                                                <MenuItem
+                                                    onClick={handleLogoutClick}>Logout</MenuItem>
                                             </MenuList>
                                         </ClickAwayListener>
                                     </Paper>

@@ -1,8 +1,9 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { db } from "../firebase/auth/firebase";
-import { collection, doc, endAt, getCountFromServer, getDoc, getDocs, orderBy, query, startAt } from "firebase/firestore";
+import { collection, doc, endAt, getCountFromServer, getDoc, getDocs, orderBy, query, startAt, where } from "firebase/firestore";
 import { Recipe, RecipeDetails } from "./storetypes";
 import { RootState } from "./store";
+import { getAuth, signOut } from "firebase/auth";
 
 /* 
 export const fetchRecipes = createAsyncThunk('recipe/fetchRecipes',
@@ -32,6 +33,24 @@ export const fetchRecipes = createAsyncThunk('recipe/fetchRecipes',
 );
 */
 
+export const fetchLogout = createAsyncThunk('recipe/fetchLogout',
+    async (_, { rejectWithValue }) => {
+        const auth = getAuth();
+        try {
+            signOut(auth);
+        }
+        catch (error) {
+            if (error instanceof Error) {
+                rejectWithValue(error.message);
+            } else {
+                rejectWithValue('An unknown error occurred');
+            }
+        }
+
+        return null;
+    }
+)
+
 export const fetchTotalNumberOfPagesInHome = createAsyncThunk('recipe/fetchTotalNumberOfPagesInHome',
     async (_, { getState }) => {
         const itemsPerPage = (getState() as RootState).recipe.recipesPerPage;
@@ -55,9 +74,9 @@ export const fetchRecipesBatch = createAsyncThunk('recipe/fetchRecipesBatch',
             recipeSnap = await getDoc(recipeRef);
 
             try {
-                let recipeData = recipeSnap.data();
+                const recipeData = recipeSnap.data();
                 if (recipeData) {
-                    let recipeObject = <Recipe>{
+                    const recipeObject = <Recipe>{
                         id: Number.parseInt(recipeSnap.id),
                         title: recipeData.title,
                         ingredients: recipeData.ingredients,
@@ -83,9 +102,9 @@ export const fetchSingleRecipe = createAsyncThunk('recipe/fetchSingleRecipe',
         const singleRecipeSnap = await getDoc(singleRecipeRef);
 
         try {
-            let recipeData = singleRecipeSnap.data();
+            const recipeData = singleRecipeSnap.data();
             if (recipeData !== undefined) {
-                let recipeObject = <RecipeDetails>{
+                const recipeObject = <RecipeDetails>{
                     id: recipeData.id,
                     title: recipeData.title,
                     ingredients: recipeData.ingredients,
@@ -111,7 +130,7 @@ export const fetchSearchResults = createAsyncThunk('recipe/fetchSearchResults',
     async (text: string) => {
 
         const fetchResults = async (searchText: string) => {
-            const recipeRef = collection(db, 'Recipe');
+            const recipeRef = collection(db, 'Recipes');
             const recipeQuery = query(recipeRef, orderBy('title'), startAt(searchText), endAt(searchText + '\uf8ff'));
             const querySnapshot = await getDocs(recipeQuery);
             return querySnapshot.docs.map((doc) => {
@@ -123,10 +142,51 @@ export const fetchSearchResults = createAsyncThunk('recipe/fetchSearchResults',
             });
         };
 
-        const searchResultsExactText = await fetchResults(text);
         const searchResultsWithUppercase = text.charAt(0) !== text.charAt(0).toUpperCase() ? await fetchResults(text.charAt(0).toUpperCase() + text.slice(1)) : [];
         const searchResultsWithLowercase = text.charAt(0) === text.charAt(0).toUpperCase() ? await fetchResults(text.charAt(0).toLowerCase() + text.slice(1)) : [];
 
-        return [...searchResultsExactText, ...searchResultsWithUppercase, ...searchResultsWithLowercase];
+        return [...searchResultsWithUppercase, ...searchResultsWithLowercase];
+    }
+)
+
+export const fetchUserData = createAsyncThunk('recipe/fetchUserData',
+    async (userId: string) => {
+
+        const userRef = collection(db, 'Chefs');
+        const userQuery = query(userRef, where("id", "==", userId));
+        const querySnapshot = await getDocs(userQuery);
+
+        let userName = '';
+
+        const userData = querySnapshot.docs.map((doc) => {
+            const userData = doc.data();
+            userName = userData.name;
+            return {
+                uid: userData.id,
+                displayName: userData.name,
+                email: userData.email,
+                emailVerified: true,
+                lastSignInTime: "N/A",
+                phoneNumber: "N/A",
+                photoURL: "",
+                likesReceived: userData.likesReceived,
+                totalViews: userData.totalViews,
+                publishedRecipes: userData.publishedRecipes
+            }
+        });
+
+        const recipeRef = collection(db, 'Recipes');
+        const recipeQuery = query(recipeRef, where("chef", "==", userName));
+        const queryRecipeSnapshot = await getDocs(recipeQuery);
+
+        const recipeData = queryRecipeSnapshot.docs.map((doc) => {
+            const recipeData = doc.data();
+            return {
+                id: recipeData.id,
+                title: recipeData.title
+            }
+        })
+
+        return { ...userData[0], recipes: recipeData }
     }
 )

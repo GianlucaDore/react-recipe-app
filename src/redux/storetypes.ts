@@ -1,14 +1,14 @@
 import firebase from "firebase/compat/app";
 
-export type User = firebase.User | null;
+export type User = firebase.User;
 
-export interface UserInfo {
-    displayName: string;
-    email: string;
-    emailVerified: boolean;
-    lastSignInTime?: string;
-    phoneNumber: string;
-    photoURL: string;
+export type UserInfo = Pick<User, 'uid'|'displayName'|'email'|'emailVerified'|'phoneNumber'|'photoURL'>
+
+export interface UserData extends UserInfo {
+    likesReceived: number;
+    totalViews: number;
+    publishedRecipes: number;
+    recipes: Array<Recipe>;
 }
 
 export interface Recipe {
@@ -30,10 +30,20 @@ export interface RecipeDetails extends Recipe {
 }
 
 export interface RecipeState {
-    user: UserInfo | null;
+    loggedUser: UserInfo | null;
+    selectedUserData: UserData | null;
     recipesDisplayed: Array<Recipe>;
     recipesPerPage: number;
     numberOfPages: number;
     currentRecipe: RecipeDetails | null;
     searchResults: Array<Recipe> | null;
+}
+
+export interface IngredientSuggestion {
+    name: string;
+}
+
+export interface Ingredient {
+    name: string;
+    /* description: string */
 }

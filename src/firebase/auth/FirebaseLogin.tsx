@@ -21,6 +21,7 @@ export const FirebaseLogin = () => {
         try {
             const res = await signInWithEmailAndPassword(auth, email, password);
             dispatch(setUser({
+                id: res.user.uid,
                 displayName: res.user.displayName,
                 email: res.user.email,
                 emailVerified: res.user.emailVerified,
@@ -35,6 +36,11 @@ export const FirebaseLogin = () => {
         }
     }
 
+    const handleSignUp = () => {
+        navigate("/sign-up");
+    }
+
+
     return (
         <div>
             <Box sx= {{ display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
@@ -43,6 +49,10 @@ export const FirebaseLogin = () => {
                     <TextField value={email} onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setEmail(event.target.value) }} margin="normal" required fullWidth id="email" label="Email Address" name="email" autoFocus />
                     <TextField value={password} onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setPassword(event.target.value) }} margin="normal" required fullWidth id="password" label="Password" name="password" />
                     <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2}}>Sign In</Button>
+                </Box>
+                <Box>
+                    <Typography component="p">Don't have an account?</Typography>
+                    <Button onClick={handleSignUp} fullWidth variant="contained" sx={{ mt: 3, mb: 2, marginTop: "3px" }}>Sign Up</Button>
                 </Box>
             </Box>
         </div>

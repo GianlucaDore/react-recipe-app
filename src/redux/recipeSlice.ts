@@ -1,11 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from './store';
 import { RecipeState } from './storetypes';
-import { fetchRecipesBatch, fetchSearchResults, fetchSingleRecipe, fetchTotalNumberOfPagesInHome } from './thunks';
+import { fetchLogout, fetchRecipesBatch, fetchSearchResults, fetchSingleRecipe, fetchTotalNumberOfPagesInHome, fetchUserData } from './thunks';
 
 
 const initialState: RecipeState = {
-    user: null,
+    loggedUser: null,
+    selectedUserData: null,
     recipesDisplayed: [],
     recipesPerPage: 3,
     numberOfPages: 1,
@@ -18,7 +19,7 @@ export const recipeSlice = createSlice({
     initialState,
     reducers: {
         setUser: (state, action) => {
-            state.user = action.payload;
+            state.loggedUser = action.payload;
         }
     },
     extraReducers: (builder) => {
@@ -63,12 +64,39 @@ export const recipeSlice = createSlice({
                 console.log("Retrieved search results (Promise fulfilled).");
                 state.searchResults = action.payload;
             })
+            .addCase(fetchUserData.pending, () => {
+                console.log("Promise fetchUserData is pending.");
+            })
+            .addCase(fetchUserData.rejected, (_, action) => {
+                console.error("Promise fetchUserData was rejected with error: ", action.payload);
+            })
+            .addCase(fetchUserData.fulfilled, (state, action) => {
+                console.log("Retrieved user data (Promise fulfilled).");
+                state.selectedUserData = action.payload;
+            })
+            .addCase(fetchLogout.rejected, (_, action) => {
+                console.error("An error occurred while logging out: ", action.payload);
+            })
+            .addCase(fetchLogout.fulfilled, (state, action) => {
+                console.log("Logout was successful.");
+                state.loggedUser = action.payload;
+            })/*
+            .addCase(fetchUserRecipes.pending, () => {
+                console.log("Promise fetchUserRecipes is pending.");
+            })
+            .addCase(fetchUserRecipes.rejected, (_, action) => {
+                console.error("Promise fetchUserRecipes was rejected with error: ", action.payload);
+            })
+            .addCase(fetchUserRecipes.fulfilled, (state, action) => {
+                console.log("Retrieved user's recipes (Promise fulfilled).");
+                state.selectedUserData = action.payload;
+            })*/
 
     }
 })
 
-
-export const getUser = (state: RootState) => state.recipe.user;
+export const getLoggedUser = (state: RootState) => state.recipe.loggedUser;
+export const getUserData = (state: RootState) => state.recipe.selectedUserData;
 export const getRecipesDisplayed = (state: RootState) => state.recipe.recipesDisplayed;
 export const getNumberOfRecipesToDisplayInHome = (state: RootState) => state.recipe.recipesPerPage;
 export const getNumberOfPagesInHome = (state: RootState) => state.recipe.numberOfPages;
