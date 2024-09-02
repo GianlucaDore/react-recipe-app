@@ -1,8 +1,9 @@
 import { User } from "firebase/auth";
 import { collection, doc, endAt, getDocs, orderBy, query, setDoc, startAt, where } from "firebase/firestore";
-import { db } from "../firebase/auth/firebase";
-import { capitalizeFirstLetterAfterSpace } from "./helpers";
+import { db, storage } from "../firebase/auth/firebase";
+import { capitalizeFirstLetterAfterSpace, createImageFileName } from "./helpers";
 import { Ingredient, IngredientSuggestion, RecipeDetails } from "../redux/storetypes";
+import { ref, uploadBytes } from "firebase/storage";
 
 export const insertNewChefInDatabase = async (user: User) : Promise<boolean> => {
     const userRef = collection(db, 'Chefs');
@@ -76,38 +77,54 @@ export const publishNewIngredient = async (ingredientName: string) : Promise<boo
 }
 
 
-export const publishNewRecipe = async (recipe: RecipeDetails) : Promise<boolean | Error> => {
+export const publishNewRecipe = async (recipe: RecipeDetails, image: File) : Promise<boolean | Error> => {
     const recipeTitleUpperCase = capitalizeFirstLetterAfterSpace(recipe.title);
 
-    const recipeRef = collection(db, 'Recipes');
-    const recipeQuery = query(recipeRef, where("name", "==", recipeTitleUpperCase));
-    const querySnapshot = await getDocs(recipeQuery);
+    const imageFileName = createImageFileName(recipe.title, image.type);
 
-    if (querySnapshot.empty) {
-        try {
-            const newDocRef = doc(recipeRef);
-            const docRecipeData = <RecipeDetails> {
-                id: 1,
-                title: recipeTitleUpperCase,
-                ingredients: recipe.ingredients,
-                preparation: recipe.preparation,
-                chef: recipe.chef,
-                minutesNeeded: recipe.minutesNeeded,
-                difficulty: recipe.difficulty,
-                views: 0,
-                likes: 0
+    if (imageFileName) {
+        const recipeImageRef = ref(storage, 'images/' + imageFileName);
+        const ret = await uploadBytes(recipeImageRef, image);
+
+        if (ret.metadata.size) {
+            const imageURL = recipeImageRef.fullPath;
+
+            const recipeRef = collection(db, 'Recipes');
+            const recipeQuery = query(recipeRef, where("name", "==", recipeTitleUpperCase));
+            const querySnapshot = await getDocs(recipeQuery);
+
+            if (querySnapshot.empty) {
+                try {
+                    const newDocRef = doc(recipeRef);
+                    const docRecipeData = <RecipeDetails> {
+                        id: 1,
+                        title: recipeTitleUpperCase,
+                        imageURL: imageURL,
+                        ingredients: recipe.ingredients,
+                        preparation: recipe.preparation,
+                        chef: recipe.chef,
+                        minutesNeeded: recipe.minutesNeeded,
+                        difficulty: recipe.difficulty,
+                        views: 0,
+                        likes: 0
+                    }
+                    await setDoc(newDocRef, docRecipeData);
+
+                    return true;
+                }
+                catch (error) {
+                    throw new Error(error as string);
+                }
             }
-            await setDoc(newDocRef, docRecipeData);
-
-
-
-            return true;
+            else {
+                throw new Error("A recipe named " + recipeTitleUpperCase + " already exists.");
+            }
         }
-        catch (error) {
-            throw new Error(error as string);
-        }
+        else {
+            throw new Error("Failed to upload image.");
+        }    
     }
     else {
-        throw new Error("A recipe named " + recipeTitleUpperCase + " already exists.");
-    }
+        throw new Error("Unsupported image format.");
+    } 
 }

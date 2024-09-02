@@ -14,6 +14,7 @@ export interface UserData extends UserInfo {
 export interface Recipe {
     id: number;
     title: string;
+    imageURL: string;
 }
 
 export type Difficulty = ("Easy" | "Medium" | "Hard" | "?");
@@ -46,4 +47,9 @@ export interface IngredientSuggestion {
 export interface Ingredient {
     name: string;
     /* description: string */
+    /* imageURL: string */
+}
+
+export interface Experience {
+    level: "Unexperienced" | "Practicing" | "Experienced" | "Top";
 }

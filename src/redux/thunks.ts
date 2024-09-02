@@ -79,6 +79,7 @@ export const fetchRecipesBatch = createAsyncThunk('recipe/fetchRecipesBatch',
                     const recipeObject = <Recipe>{
                         id: Number.parseInt(recipeSnap.id),
                         title: recipeData.title,
+                        imageURL: recipeData.imageURL,
                         ingredients: recipeData.ingredients,
                         preparation: recipeData.preparation,
                         chef: recipeData.chef
@@ -137,7 +138,8 @@ export const fetchSearchResults = createAsyncThunk('recipe/fetchSearchResults',
                 const recipeData = doc.data();
                 return {
                     id: recipeData.id,
-                    title: recipeData.title
+                    title: recipeData.title,
+                    imageURL: recipeData.imageURL
                 }
             });
         };
@@ -183,7 +185,8 @@ export const fetchUserData = createAsyncThunk('recipe/fetchUserData',
             const recipeData = doc.data();
             return {
                 id: recipeData.id,
-                title: recipeData.title
+                title: recipeData.title,
+                imageURL: recipeData.imageURL
             }
         })
 

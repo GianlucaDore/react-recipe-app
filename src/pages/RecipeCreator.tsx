@@ -3,17 +3,19 @@ import { useAppSelector } from "../redux/hooks";
 import { getLoggedUser } from "../redux/recipeSlice";
 import { useNavigate } from "react-router";
 import { RecipeAppBar } from "../components/RecipeAppBar";
-import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
+import { Alert, Box, Snackbar, Typography } from "@mui/material";
 import { IngredientsSelector } from "../components/IngredientsSelector";
 import { ToasterData } from "../utils/interfaces";
 import { Close } from "@mui/icons-material";
 import { RecipeEditor } from "../components/RecipeEditor";
 import { publishNewRecipe } from "../utils/apicalls";
 import { RecipeDetails } from "../redux/storetypes";
+import { RecipeImage } from "../components/RecipeImage";
 
 export const RecipeCreator = () => {
 
     const [recipeCreated, setRecipeCreated] = useState<RecipeDetails | null>(null);
+    const [recipeImage, setRecipeImage] = useState<File | null>(null);
 
     const [toaster, setToaster] = useState<ToasterData>({
         open: false,
@@ -50,14 +52,16 @@ export const RecipeCreator = () => {
         }
         else {
             try {
-                const retValue = await publishNewRecipe(recipeCreated);
-                if (retValue) setToaster({
-                    open: true,
-                    message: `New recipe "${recipeCreated?.title}" published successfully!`,
-                    type: "success",
-                    transition: "Slide",
-                    key: recipeCreated.title 
-                })
+                if (recipeImage) {
+                    const retValue = await publishNewRecipe(recipeCreated, recipeImage);
+                    if (retValue) setToaster({
+                        open: true,
+                        message: `New recipe "${recipeCreated?.title}" published successfully!`,
+                        type: "success",
+                        transition: "Slide",
+                        key: recipeCreated.title 
+                    })
+                }
             }
             catch (error) {
                 console.error("Error while publishing a new recipe in the database: ", error);
@@ -77,10 +81,14 @@ export const RecipeCreator = () => {
         <>
             <Box display="flex" flexDirection="column" minHeight="100vh" sx={{ backgroundColor: "#FCEFDF" }}>
                 <RecipeAppBar />
-                <Box display="flex">
-                    <IngredientsSelector setToaster={setToaster} />
-                    <RecipeEditor />
-
+                <Box display="flex" flexDirection="row" width="100%" justifyContent="space-evenly">
+                    <Box flexDirection="column" height="100%" width="50%">
+                        <IngredientsSelector setToaster={setToaster} />
+                    </Box>
+                    <Box display="flex" flexDirection="column" height="100%" alignItems="center">
+                        <RecipeImage setImage={setRecipeImage} />
+                        <RecipeEditor />
+                    </Box>
                     <Snackbar 
                         anchorOrigin={{ vertical: "top", horizontal: "right" }}
                         autoHideDuration={4000}

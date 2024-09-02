@@ -27,7 +27,7 @@ export const FirebaseLogin = () => {
                 emailVerified: res.user.emailVerified,
                 lastSignInTime: res.user.metadata.lastSignInTime,
                 phoneNumber: res.user.phoneNumber,
-                photoURL: res.user.photoURL
+                imageURL: res.user.photoURL
             }));
             navigate("/");
         }
