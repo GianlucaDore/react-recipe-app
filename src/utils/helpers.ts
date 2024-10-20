@@ -36,3 +36,13 @@ export function calculateChefExperience(userData: UserData) : Experience {
 
     return experience;
 }
+
+export function getInitialsForChef(chefName: string | null | undefined) : string {
+    if (chefName === undefined || chefName === null || chefName === '' || chefName === 'Unknown') {
+        return '?';
+    }
+    const initials = chefName.split(' ')
+                        .map((nameSubstring) => nameSubstring.charAt(0).toUpperCase())
+                        .join('');
+    return initials;
+}

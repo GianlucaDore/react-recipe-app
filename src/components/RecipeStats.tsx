@@ -16,19 +16,19 @@ export const RecipeStats = (props: RecipeStatsProps) => {
             <Stack textAlign="center" justifyContent="center" alignItems="center" spacing={{ xs: 1, sm: 2, md: 4 }} direction={{ xs: 'row', sm: 'row', md: 'column' }}>
                 <Box width="100%" padding="20px" border="2px solid brown" borderRadius="13px" sx={{ backgroundColor: "#FFF7EE" }}>
                     <AccessAlarm />
-                    <Typography>{minutesNeeded} min</Typography>
+                    <Typography>Preparation:<br/><b>{minutesNeeded} min</b></Typography>
                 </Box>
                 <Box width="100%" padding="20px" border="2px solid brown" borderRadius="13px" sx={{ backgroundColor: "#FFF7EE" }}>
                     <Psychology />
-                    <Typography>{difficulty}</Typography>
+                    <Typography>Difficulty:<br/><b>{difficulty}</b></Typography>
                 </Box>
                 <Box width="100%" padding="20px" border="2px solid brown" borderRadius="13px" sx={{ backgroundColor: "#FFF7EE" }}>
                     <Favorite />
-                    <Typography>{likes}</Typography>
+                    <Typography>Likes:<br/><b>{likes}</b></Typography>
                 </Box>
                 <Box width="100%" padding="20px" border="2px solid brown" borderRadius="13px" sx={{ backgroundColor: "#FFF7EE" }}>
                     <Visibility />
-                    <Typography>{views}</Typography>
+                    <Typography>Views:<br/><b>{views}</b></Typography>
                 </Box>
             </Stack >
         </>

@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from './store';
 import { RecipeState } from './storetypes';
-import { fetchLogout, fetchRecipesBatch, fetchSearchResults, fetchSingleRecipe, fetchTotalNumberOfPagesInHome, fetchUserData } from './thunks';
+import { fetchLogout, fetchRecipeOfTheDay, fetchRecipesBatch, fetchSearchResults, fetchSingleRecipe, fetchTotalNumberOfPagesInHome, fetchUserData } from './thunks';
 
 
 const initialState: RecipeState = {
@@ -11,7 +11,8 @@ const initialState: RecipeState = {
     recipesPerPage: 3,
     numberOfPages: 1,
     currentRecipe: null,
-    searchResults: null
+    searchResults: null,
+    recipeOfTheDay: null
 }
 
 export const recipeSlice = createSlice({
@@ -24,6 +25,15 @@ export const recipeSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+            .addCase(fetchRecipeOfTheDay.pending, () => {
+                console.log("Promise fetchRecipeOfTheDay is pending.");
+            })
+            .addCase(fetchRecipeOfTheDay.rejected, (_, action) => {
+                console.error("Promise fetchRecipeOfTheDay was rejected with error: ", action.payload);
+            })
+            .addCase(fetchRecipeOfTheDay.fulfilled, (state, action) => {
+                state.recipeOfTheDay = action.payload;
+            })
             .addCase(fetchTotalNumberOfPagesInHome.pending, () => {
                 console.log("Promise fetchTotalNumberOfPagesInHome is pending.");
             })
@@ -97,6 +107,7 @@ export const recipeSlice = createSlice({
 
 export const getLoggedUser = (state: RootState) => state.recipe.loggedUser;
 export const getUserData = (state: RootState) => state.recipe.selectedUserData;
+export const getRecipeOfTheDay = (state: RootState) => state.recipe.recipeOfTheDay;
 export const getRecipesDisplayed = (state: RootState) => state.recipe.recipesDisplayed;
 export const getNumberOfRecipesToDisplayInHome = (state: RootState) => state.recipe.recipesPerPage;
 export const getNumberOfPagesInHome = (state: RootState) => state.recipe.numberOfPages;

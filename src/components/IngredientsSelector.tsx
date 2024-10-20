@@ -1,33 +1,28 @@
-import { Fragment, useEffect, useState } from "react";
+import { Dispatch, Fragment, useCallback, useEffect, useState } from "react";
 import { publishNewIngredient, retrieveIngredientSuggestion } from "../utils/apicalls";
 import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, Button, Modal, TextField, Typography } from "@mui/material";
 import { Add, Close, ExpandMore, Publish } from "@mui/icons-material";
-import { ToasterData } from "../utils/interfaces";
+import { RecipeCreatedAction, ToasterData } from "../utils/interfaces";
+import { withIngredients } from "../utils/hocs";
 
 interface IngredientsSelectorProps {
     setToaster: React.Dispatch<React.SetStateAction<ToasterData>>;
+    ingredients: Array<string>;
+    dispatcher: Dispatch<RecipeCreatedAction>;
 }
 
-export const IngredientsSelector = (props: IngredientsSelectorProps) => {
-    const {setToaster} = props;
+const IngredientsSelector = (props: IngredientsSelectorProps) => {
+    const { setToaster, ingredients, dispatcher } = props;
 
-    const [ingredientList, setIngredientList] = useState<Array<string>>([]);
+    // const [ingredientList, setIngredientList] = useState<Array<string>>([]);
     const [expandedAccordion, setExpandedAccordion] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
     const [ingredientSuggestions, setIngredientSuggestions] = useState<Array<string>>([]);
     const [modalStatus, setModalStatus] = useState<boolean>(false);
     const [ingredientNameInModal, setIngredientNameInModal] = useState<string>("");
 
-    useEffect(() => {
-        const timeoutID = setTimeout(getIngredientSuggestions,
-            250
-        );
 
-        return (() => clearTimeout(timeoutID));
-    }, [searchTerm]);
-
-
-    const getIngredientSuggestions = async () => {
+    const getIngredientSuggestions = useCallback(async () => {
         try {
             const suggestions = await retrieveIngredientSuggestion(searchTerm);
             setIngredientSuggestions(() => Array.from(suggestions.map(s => s.name)) as Array<string>);
@@ -35,7 +30,17 @@ export const IngredientsSelector = (props: IngredientsSelectorProps) => {
         catch (error) {
             console.error("Can't retrieve suggestions for ingredient: ", searchTerm);
         }
-    }
+    }, [searchTerm]);
+
+
+    useEffect(() => {
+        const timeoutID = setTimeout(getIngredientSuggestions,
+            250
+        );
+
+        return (() => clearTimeout(timeoutID));
+    }, [searchTerm, getIngredientSuggestions]);
+
 
     const handleAccordionChange = (i: string) => () => {
         setExpandedAccordion(() => {
@@ -79,22 +84,30 @@ export const IngredientsSelector = (props: IngredientsSelectorProps) => {
     }
 
     const onAddNewAccordion = () => {
-        setIngredientList((prevState) => {
+        /* setIngredientList((prevState) => {
             if (prevState[0] !== "?") {
                 return ["?", ...prevState];
             }
             return prevState;
+        }); */
+        dispatcher({
+            type: 'add-empty-ingredient',
+            payload: '?'
         });
     }
     
     const onAddNewIngredient = (ingredient: string) => {
         if (ingredient !== "?") {
-            setIngredientList(prevState => {
+            /* setIngredientList(prevState => {
                 if (prevState[0] === "?") {
                     return [ingredient, ...prevState.slice(1)];
                 }
                 return [ingredient, ...prevState];
-            });
+            }); */
+            dispatcher({
+                type: 'insert-ingredient',
+                payload: ingredient
+            } as RecipeCreatedAction);
         }
     }
 
@@ -105,7 +118,7 @@ export const IngredientsSelector = (props: IngredientsSelectorProps) => {
                 <Button onClick={onAddNewAccordion}>
                     <Add />
                 </Button>
-                    {ingredientList.map((i: string) => {
+                    {ingredients.map((i: string) => {
                         if (i === "?") {
                             return (
                                 <Fragment key={i}>
@@ -178,3 +191,5 @@ export const IngredientsSelector = (props: IngredientsSelectorProps) => {
         </>
     )
 }
+
+export const IngredientsSelectorMemoized = withIngredients(IngredientsSelector);

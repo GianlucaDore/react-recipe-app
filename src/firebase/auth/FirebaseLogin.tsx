@@ -21,7 +21,7 @@ export const FirebaseLogin = () => {
         try {
             const res = await signInWithEmailAndPassword(auth, email, password);
             dispatch(setUser({
-                id: res.user.uid,
+                uid: res.user.uid,
                 displayName: res.user.displayName,
                 email: res.user.email,
                 emailVerified: res.user.emailVerified,

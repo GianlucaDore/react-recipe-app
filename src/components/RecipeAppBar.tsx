@@ -44,6 +44,10 @@ export const RecipeAppBar = () => {
         }
     }, []);
 
+    const handleHomeClick = () => {
+        navigate('/');
+    }
+
     const handleUserButtonClick = () => {
         if (!userLoggedIn) navigate('/sign-in')
         else {
@@ -67,7 +71,7 @@ export const RecipeAppBar = () => {
     }
 
     return (
-        <AppBar position="static" sx={{ backgroundColor: "#5C3317" }}>
+        <AppBar position="static">
             <Toolbar>
                 <IconButton
                     size="large"
@@ -78,10 +82,10 @@ export const RecipeAppBar = () => {
                 >
                     <MenuIcon />
                 </IconButton>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                <Typography variant="h6" component="div" onClick={handleHomeClick} sx={{ maxWidth: "fit-content", flexGrow: 1, cursor: "pointer" }}>
                     Recipe App
                 </Typography>
-                <Box>
+                <Box marginLeft="auto">
                     <TextField variant="outlined" value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)} />
                     <Button onClick={handleSearchSubmit}>
                         <Search />
@@ -97,6 +101,7 @@ export const RecipeAppBar = () => {
                             aria-label="menu"
                             sx={{ mr: 2 }}
                             onClick={handleUserButtonClick}
+                            onBlur={handleUserButtonClick}
                         >
                             <AccountCircleIcon />
                             <Typography>{userLoggedIn.email}</Typography>

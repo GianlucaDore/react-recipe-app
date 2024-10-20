@@ -1,21 +1,64 @@
-import { useEffect, useState } from "react"
+import { createContext, useEffect, useReducer, useState } from "react"
 import { useAppSelector } from "../redux/hooks";
 import { getLoggedUser } from "../redux/recipeSlice";
 import { useNavigate } from "react-router";
 import { RecipeAppBar } from "../components/RecipeAppBar";
-import { Alert, Box, Snackbar, Typography } from "@mui/material";
-import { IngredientsSelector } from "../components/IngredientsSelector";
-import { ToasterData } from "../utils/interfaces";
+import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
+import { IngredientsSelectorMemoized } from "../components/IngredientsSelector";
+import { RecipeCreatedAction, RecipeCreatedState, ToasterData } from "../utils/interfaces";
 import { Close } from "@mui/icons-material";
-import { RecipeEditor } from "../components/RecipeEditor";
+import { RecipeEditorMemoized } from "../components/RecipeEditor";
 import { publishNewRecipe } from "../utils/apicalls";
-import { RecipeDetails } from "../redux/storetypes";
-import { RecipeImage } from "../components/RecipeImage";
+import { RecipeImageMemoized } from "../components/RecipeImage";
+import { Difficulty, RecipeDetails } from "../redux/storetypes";
+import { RecipeNamerMemoized } from "../components/RecipeNamer";
+
+
+function recipeCreatedReducer(state: RecipeCreatedState, action: RecipeCreatedAction): RecipeCreatedState {
+    switch (action.type) {
+        case 'insert-ingredient': {
+            if (state.ingredients[0] === '?') {
+                return {...state, ingredients: [...state.ingredients.slice(1)]};
+            }
+            else return {...state, ingredients: [action.payload as string, ...state.ingredients]};
+        }
+        case 'add-empty-ingredient': {
+            if (state.ingredients[0] !== '?') {
+                return {...state, ingredients: ['?', ...state.ingredients]};
+            }
+            else return {...state};
+        }
+        case 'edit-title': 
+            return {...state, title: action.payload as string};
+        case 'edit-minutes-needed':
+            return {...state, minutesNeeded: action.payload as number};
+        case 'edit-difficulty': 
+            return {...state, difficulty: action.payload as Difficulty};
+        case 'edit-preparation':
+            return {...state, preparation: action.payload as string};
+        case 'edit-image':
+            return {...state, image: action.payload as File};
+        default:
+            throw Error('Unknown action for recipeCreatedReducer.');
+    }
+}
+
+const initialState: RecipeCreatedState = {
+    title: "",
+    ingredients: [],
+    preparation: "",
+    minutesNeeded: 0,
+    difficulty: "Easy",
+    image: null,
+    imageURL: ''
+};
+
+export const RecipeCreatedContext = createContext<RecipeCreatedState>(initialState);
+
 
 export const RecipeCreator = () => {
 
-    const [recipeCreated, setRecipeCreated] = useState<RecipeDetails | null>(null);
-    const [recipeImage, setRecipeImage] = useState<File | null>(null);
+    const [recipeCreated, recipeCreatedDispatch] = useReducer(recipeCreatedReducer, initialState);
 
     const [toaster, setToaster] = useState<ToasterData>({
         open: false,
@@ -41,7 +84,7 @@ export const RecipeCreator = () => {
     }
 
     const handleSubmitRecipe = async () => {
-        if (!recipeCreated || !recipeCreated.title || !recipeCreated.ingredients || !recipeCreated.chef || !recipeCreated.preparation || !recipeCreated.minutesNeeded || !recipeCreated.difficulty) {
+        if (!recipeCreated || !recipeCreated.title || !recipeCreated.ingredients || !recipeCreated.preparation || !recipeCreated.minutesNeeded || !recipeCreated.difficulty) {
             setToaster({
                 open: true,
                 message: "Can't submit a recipe with missing arguments. Please provide all the fields needed.",
@@ -52,8 +95,14 @@ export const RecipeCreator = () => {
         }
         else {
             try {
-                if (recipeImage) {
-                    const retValue = await publishNewRecipe(recipeCreated, recipeImage);
+                if (recipeCreated.image) {
+                    const recipeCreatedWithDetails: Omit<RecipeDetails, "id" | "imageURL"> = {
+                        ...recipeCreated,
+                        chef: loggedUser!.uid,
+                        views: 0,
+                        likes: 0
+                    }
+                    const retValue = await publishNewRecipe(recipeCreatedWithDetails, recipeCreated.image);
                     if (retValue) setToaster({
                         open: true,
                         message: `New recipe "${recipeCreated?.title}" published successfully!`,
@@ -79,32 +128,36 @@ export const RecipeCreator = () => {
     
     return (
         <>
-            <Box display="flex" flexDirection="column" minHeight="100vh" sx={{ backgroundColor: "#FCEFDF" }}>
+            <Box display="flex" flexDirection="column" minHeight="100vh">
                 <RecipeAppBar />
-                <Box display="flex" flexDirection="row" width="100%" justifyContent="space-evenly">
-                    <Box flexDirection="column" height="100%" width="50%">
-                        <IngredientsSelector setToaster={setToaster} />
+                <RecipeCreatedContext.Provider value={recipeCreated}>
+                    <Box display="flex" flexDirection="row" width="100%" justifyContent="space-evenly">
+                        <Box flexDirection="column" height="100%" width="50%">
+                            <IngredientsSelectorMemoized setToaster={setToaster} dispatcher={recipeCreatedDispatch}/>
+                            <RecipeNamerMemoized dispatcher={recipeCreatedDispatch} />
+                        </Box>
+                        <Box display="flex" flexDirection="column" height="100%" alignItems="center">
+                            <RecipeImageMemoized dispatcher={recipeCreatedDispatch} currentImageURL={recipeCreated.imageURL}/>
+                            <RecipeEditorMemoized dispatcher={recipeCreatedDispatch} />
+                            <Button onClick={handleSubmitRecipe}>Submit</Button>
+                        </Box>
+                        <Snackbar 
+                            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                            autoHideDuration={4000}
+                            open={toaster.open}
+                            key={toaster.key}
+                            onClose={() => handleCloseToaster()}
+                            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}
+                        >
+                            <Alert severity={toaster.type} variant="filled" sx={{display:"flex", flexDirection:"row", alignItems: "center"}}>
+                                <Box display="flex" justifyContent="space-between" alignItems="center">
+                                    <Typography>{toaster.message}</Typography>
+                                    <Close onClick={() => handleCloseToaster()} sx={{ marginLeft: "2%", cursor: "pointer" }}/>
+                                </Box>
+                            </Alert>
+                        </Snackbar>
                     </Box>
-                    <Box display="flex" flexDirection="column" height="100%" alignItems="center">
-                        <RecipeImage setImage={setRecipeImage} />
-                        <RecipeEditor />
-                    </Box>
-                    <Snackbar 
-                        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                        autoHideDuration={4000}
-                        open={toaster.open}
-                        key={toaster.key}
-                        onClose={() => handleCloseToaster()}
-                        sx={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}
-                    >
-                        <Alert severity={toaster.type} variant="filled" sx={{display:"flex", flexDirection:"row", alignItems: "center"}}>
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography>{toaster.message}</Typography>
-                                <Close onClick={() => handleCloseToaster()} sx={{ marginLeft: "2%", cursor: "pointer" }}/>
-                            </Box>
-                        </Alert>
-                    </Snackbar>
-                </Box>
+                </RecipeCreatedContext.Provider>
             </Box>       
         </>
     )

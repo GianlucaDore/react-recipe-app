@@ -1,17 +1,28 @@
-import { useState } from "react";
-import { Box, Button } from "@mui/material";
+import { Dispatch } from "react";
+import { Box } from "@mui/material";
 import ReactQuill from "react-quill";
+import { RecipeCreatedAction } from "../utils/interfaces";
+import { withPreparation } from "../utils/hocs";
 
-export const RecipeEditor = () => {
+interface RecipeEditorProps {
+    preparation: string;
+    dispatcher: Dispatch<RecipeCreatedAction>
+}
 
-    const [value, setValue] = useState('');
+const RecipeEditor = (props: RecipeEditorProps) => {
+    const { dispatcher, preparation } = props;
+
+    const handleChange = (content: string) => {
+        dispatcher({ type: "edit-preparation", payload: content });
+    }
     
     return (
         <>
             <Box>
-                <ReactQuill theme="snow" value={value} onChange={setValue} />
-                <Button variant="contained" color="success" onClick={() => handleSubmitRecipe()}>Submit</Button>
+                <ReactQuill theme="snow" value={preparation} onChange={handleChange} />
             </Box>
         </>
     )
 }
+
+export const RecipeEditorMemoized = withPreparation(RecipeEditor);

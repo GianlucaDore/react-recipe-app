@@ -4,7 +4,7 @@ import { RecipeAppBar } from "../components/RecipeAppBar";
 import { RecipesList } from '../components/RecipesList';
 import { useEffect, useState } from 'react';
 import { useAppDispatch } from '../redux/hooks';
-import { fetchRecipesBatch, fetchTotalNumberOfPagesInHome } from '../redux/thunks';
+import { fetchRecipeOfTheDay, fetchRecipesBatch, fetchTotalNumberOfPagesInHome } from '../redux/thunks';
 
 export const RecipeHome = () => {
 
@@ -16,6 +16,10 @@ export const RecipeHome = () => {
         dispatch(fetchRecipesBatch(pageNumber));
         dispatch(fetchTotalNumberOfPagesInHome());
     }, [dispatch, pageNumber]);
+
+    useEffect(() => {
+        dispatch(fetchRecipeOfTheDay());
+    });
 
 
     return (

@@ -50,14 +50,18 @@ interface RecipeItemProps {
 }
 
 export const RecipeItem = (props: RecipeItemProps) => {
-    const recipe = props.recipe;
+    const { recipe } = props;
 
     const navigate = useNavigate();
+
+    const handleRecipeItemClick = () => {
+        navigate(`/recipe/${recipe.id}`);
+    }
 
     return (
         <Box display="flex" justifyContent="center">
             <Card sx={{ width: "90%", height: "200px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-                <CardActionArea onClick={() => navigate(`/recipe/${recipe.id}`)} sx={{ display: "flex", height: "100%", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+                <CardActionArea onClick={handleRecipeItemClick} sx={{ display: "flex", height: "100%", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
                     {recipe ? (
                         <CardMedia component="img" height="140" image="./recipeplaceholder" alt="recipe placeholder" />
                     ) : (

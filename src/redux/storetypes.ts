@@ -12,7 +12,7 @@ export interface UserData extends UserInfo {
 }
 
 export interface Recipe {
-    id: number;
+    id: string;
     title: string;
     imageURL: string;
 }
@@ -30,6 +30,12 @@ export interface RecipeDetails extends Recipe {
     likes: number;
 }
 
+export interface RecipeOfTheDay extends Recipe {
+    preparationInBrief: string;
+    dateOfFetching: string;
+    chef: string | null;
+}
+
 export interface RecipeState {
     loggedUser: UserInfo | null;
     selectedUserData: UserData | null;
@@ -38,6 +44,7 @@ export interface RecipeState {
     numberOfPages: number;
     currentRecipe: RecipeDetails | null;
     searchResults: Array<Recipe> | null;
+    recipeOfTheDay: RecipeOfTheDay | null;
 }
 
 export interface IngredientSuggestion {

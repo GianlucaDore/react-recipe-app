@@ -19,7 +19,7 @@ export const RecipeSearch = () => {
     useEffect(() => {
         if (term)
             dispatch(fetchSearchResults(term));
-    }, []);
+    }, [dispatch, term]);
 
     return (
         <>

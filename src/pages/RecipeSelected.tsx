@@ -19,11 +19,11 @@ export const RecipeSelected = () => {
     useEffect(() => {
         if (recipeId !== undefined)
             dispatch(fetchSingleRecipe(recipeId));
-    }, []);
+    }, [dispatch, recipeId]);
 
     return (
         <>
-            <Box display="flex" flexDirection="column" height="100vh" sx={{ backgroundColor: "#FCEFDF" }}>
+            <Box display="flex" flexDirection="column" height="100vh">
                 <RecipeAppBar />
                 <Grid container spacing={2} direction="row" flexWrap="nowrap" justifyContent="center" alignItems="center" width="100%" height="100%" margin="0px">
                     <Grid item xs={12} md={3} height="100%">
@@ -37,7 +37,7 @@ export const RecipeSelected = () => {
                                         {
                                             recipeData.ingredients.map((ingredient) => {
                                                 return (
-                                                    <ListItem>
+                                                    <ListItem key={ingredient}>
                                                         <ListItemText primary={ingredient} />
                                                     </ListItem>)
                                             })
@@ -50,12 +50,12 @@ export const RecipeSelected = () => {
                     <Grid container xs={12} md={2} height="100%" alignItems="center" justifyContent="center">
                         <RecipeStats minutesNeeded={recipeData ? recipeData.minutesNeeded : NaN} difficulty={recipeData ? recipeData.difficulty : "?"} likes={recipeData ? recipeData.likes : NaN} views={recipeData ? recipeData.views : NaN} />
                     </Grid>
-                    <Grid item xs={12} md={7} justifyContent="center" alignItems="center">
-                        <Box display="flex" flexDirection="column" height="100%" overflow="hidden" sx={{ overflowY: "scroll" }} >
+                    <Grid item xs={12} md={7} justifyContent="center" alignItems="center" marginRight="25px">
+                        <Box display="flex" flexDirection="column" height="100%" overflow="hidden" >
                             <Box height="50vh">
                                 <img src="/ricettabase" alt={recipeData?.title} />
                             </Box>
-                            <Box border="2px solid brown" padding="20px" borderRadius="17px" sx={{ backgroundColor: "#FFF7EE" }}>
+                            <Box border="2px solid brown" padding="20px" borderRadius="17px" sx={{ backgroundColor: "#FFF7EE", overflowY: "auto" }}>
                                 {recipeData ? (
                                     <Typography>{recipeData.preparation}</Typography>
                                 ) : (<CircularProgress />)}
