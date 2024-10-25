@@ -34,6 +34,10 @@ export interface RecipeOfTheDay extends Recipe {
     preparationInBrief: string;
     dateOfFetching: string;
     chef: string | null;
+    minutesNeeded: number;
+    difficulty: Difficulty;
+    views: number;
+    likes: number;
 }
 
 export interface RecipeState {

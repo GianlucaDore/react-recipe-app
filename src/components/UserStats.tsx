@@ -1,5 +1,5 @@
 import { Favorite, HistoryEdu, Visibility } from "@mui/icons-material";
-import { Box, Stack, Typography } from "@mui/material"
+import { Box, Typography } from "@mui/material"
 
 interface UserStatsProps {
     likesReceived: number,
@@ -11,32 +11,71 @@ export const UserStats = (props: UserStatsProps) => {
     const { likesReceived, totalViews, publishedRecipes } = props;
 
     return (
-        <>
-            <Box width="fit-content" margin="auto" sx={{padding: "20px 10px", border: "2px solid black", borderRadius: "15%"}}>
-                <Stack width="fit-content" flexDirection="row" justifyContent="center" columnGap="10px">
-                    <Box flexDirection="column" alignItems="center">
-                        <Box flexDirection="row" justifyContent="center">
-                            <Typography>{publishedRecipes}</Typography>
-                            <HistoryEdu />
-                        </Box>
-                        <Box>Recipes</Box>
+        <Box display="flex" flexDirection="column" alignItems="center">
+            <Typography 
+                width="fit-content"
+                padding="7px 15px 5px 15px" 
+                variant="h5"
+                color="#FFF7EE"
+                sx={{
+                    backgroundColor: "#4e342e",
+                    borderTopLeftRadius: "15px",
+                    borderTopRightRadius: "15px"
+                }}
+            >Chef Stats</Typography>
+            <Box
+                width="fit-content"
+                margin="auto"
+                sx={{
+                    backgroundColor: "#FFF7EE",
+                    padding: "20px 10px",
+                    border: "2px solid #4e342e",
+                    borderRadius: "20px",
+                    display: "flex",
+                    justifyContent: "center",
+                    columnGap: "10px"
+                }}
+            >
+                <Box
+                    width="100px"
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="center"
+                >
+                    <Box display="flex" flexDirection="row" justifyContent="center" alignItems="center">
+                        <HistoryEdu />
+                        <Typography marginLeft="3px" textAlign="center">{publishedRecipes}</Typography>
                     </Box>
-                    <Box flexDirection="column" alignItems="center">
-                        <Box flexDirection="row" justifyContent="center">
-                            <Typography>{totalViews}</Typography>
-                            <Visibility />
-                        </Box>
-                        <Box>Views</Box>
+                    <Typography>Recipes</Typography>
+                </Box>
+                <Box
+                    width="100px"
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="center"
+                >
+                    <Box display="flex" flexDirection="row" justifyContent="center" alignItems="center">
+                        <Visibility />
+                        <Typography marginLeft="3px" textAlign="center">{totalViews}</Typography>
                     </Box>
-                    <Box flexDirection="column" alignItems="center">
-                        <Box flexDirection="row" justifyContent="center">
-                            <Typography>{likesReceived}</Typography>
-                            <Favorite />
-                        </Box>
-                        <Box>Likes</Box>
+                    <Typography>Views</Typography>
+                </Box>
+                <Box
+                    width="100px"
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="center"
+                >
+                    <Box display="flex" flexDirection="row" justifyContent="center" alignItems="center">
+                        <Favorite />
+                        <Typography marginLeft="3px" textAlign="center">{likesReceived}</Typography>
                     </Box>
-                </Stack>
+                    <Typography>Likes</Typography>
+                </Box>
             </Box>
-        </>
+        </Box>     
     );
 }

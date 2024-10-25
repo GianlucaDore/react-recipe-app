@@ -44,8 +44,9 @@ export const recipeSlice = createSlice({
                 // console.log("Retrieved total number of pages for Home component (Promise fulfilled).");
                 state.numberOfPages = action.payload;
             })
-            .addCase(fetchRecipesBatch.pending, () => {
+            .addCase(fetchRecipesBatch.pending, (state) => {
                 console.log("Promise fetchRecipesBatch is pending.");
+                state.recipesDisplayed = [];
             })
             .addCase(fetchRecipesBatch.rejected, (_, action) => {
                 console.error("Promise fetchRecipesBatch was rejected with error: ", action.payload);

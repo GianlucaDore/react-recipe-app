@@ -26,8 +26,8 @@ export const RecipeHome = () => {
         <>
             <Box display="flex" flexDirection="column" height="100vh">
                 <RecipeAppBar />
-                <Grid container spacing={2} direction="column" flexWrap="nowrap" justifyContent="center" alignItems="center" marginTop="15px" marginLeft="0px" width="100%">
-                    <Grid item xs={12} marginBottom="30px">
+                <Grid container spacing={2} direction="column" flexWrap="nowrap" justifyContent="center" alignItems="center" paddingTop="15px" marginLeft="0px" width="100%">
+                    <Grid item xs={12} width="100%" marginBottom="35px" paddingBottom="25px" justifyContent="center" sx={{ backgroundColor: "#3B2F2F" }}>
                         <RecipeOfTheDay />
                     </Grid>
                     <Grid container spacing={1} justifyContent="center" alignItems="center">

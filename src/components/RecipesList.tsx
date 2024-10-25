@@ -13,8 +13,7 @@ interface RecipesListProps {
 }
 
 export const RecipesList = (props: RecipesListProps) => {
-    const { pageNumber, setPageNumber
-    } = props.pageState;
+    const { pageNumber, setPageNumber } = props.pageState;
 
     const numberOfPages = useAppSelector(getNumberOfPagesInHome);
     const recipesToDisplay = useAppSelector(getRecipesDisplayed);
@@ -60,20 +59,20 @@ export const RecipeItem = (props: RecipeItemProps) => {
 
     return (
         <Box display="flex" justifyContent="center">
-            <Card sx={{ width: "90%", height: "200px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+            <Card sx={{ width: "90%", height: "200px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", '&:hover': { transform: "scale(1.05)" } }}>
                 <CardActionArea onClick={handleRecipeItemClick} sx={{ display: "flex", height: "100%", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
                     {recipe ? (
-                        <CardMedia component="img" height="140" image="./recipeplaceholder" alt="recipe placeholder" />
+                        <CardMedia component="img" image={recipe.imageURL} alt={recipe.title} sx={{ height: "100%", width: "100%", position: "absolute", top: 0, left: 0, zIndex: 1 }} />
                     ) : (
-                        <CircularProgress sx={{ marginTop: "auto" }} />
+                        <CircularProgress />
                     )}
-                    <CardContent sx={{ width: "100%", marginTop: "auto", textAlign: "right" }}>
+                    <CardContent sx={{ width: "100%", position: "absolute", bottom: 0, right: 0, zIndex: 2, marginTop: "auto", textAlign: "right" }}>
                         {recipe ? (
-                            <Typography gutterBottom variant="h5" component="div">
+                            <Typography gutterBottom variant="h5" component="div" sx={{ width: 'fit-content', marginLeft: 'auto', backgroundColor: '#4e342e', borderRadius: '15px', color: '#fff5e1', padding: '2px 12px 2px 12px'}}>
                                 {recipe.title}
                             </Typography>
                         ) : (
-                            <Skeleton variant="text" sx={{ fontSize: '2rem' }} />
+                            <Skeleton variant="text" sx={{ fontSize: '3rem', borderRadius: '15px', marginLeft: 'auto', width: {xs: '100%', sm: '75%', md: '50%', lg: '40%'} }} />
                         )}
                     </CardContent>
                 </CardActionArea>

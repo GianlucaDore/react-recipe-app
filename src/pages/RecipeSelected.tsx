@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { fetchSingleRecipe } from "../redux/thunks";
@@ -6,6 +6,8 @@ import { getCurrentRecipe } from "../redux/recipeSlice";
 import { RecipeAppBar } from "../components/RecipeAppBar";
 import { Box, CircularProgress, Grid, LinearProgress, List, ListItem, ListItemText, Typography } from "@mui/material";
 import { RecipeStats } from "../components/RecipeStats";
+import DOMPurify from "dompurify";
+import parse from 'html-react-parser';
 
 
 export const RecipeSelected = () => {
@@ -16,10 +18,19 @@ export const RecipeSelected = () => {
 
     const recipeData = useAppSelector(getCurrentRecipe);
 
+    const sanitizedHtml = useMemo(() => {
+        if (recipeData?.preparation) {
+          return DOMPurify.sanitize(recipeData.preparation);
+        }
+        else return '';
+      }, [recipeData?.preparation]);
+
+
     useEffect(() => {
         if (recipeId !== undefined)
             dispatch(fetchSingleRecipe(recipeId));
     }, [dispatch, recipeId]);
+
 
     return (
         <>
@@ -47,17 +58,17 @@ export const RecipeSelected = () => {
                             </Box>
                         </Box>
                     </Grid>
-                    <Grid container xs={12} md={2} height="100%" alignItems="center" justifyContent="center">
+                    <Grid item xs={12} md={2} height="100%" alignContent="center" alignItems="center" justifyContent="center">
                         <RecipeStats minutesNeeded={recipeData ? recipeData.minutesNeeded : NaN} difficulty={recipeData ? recipeData.difficulty : "?"} likes={recipeData ? recipeData.likes : NaN} views={recipeData ? recipeData.views : NaN} />
                     </Grid>
                     <Grid item xs={12} md={7} justifyContent="center" alignItems="center" marginRight="25px">
                         <Box display="flex" flexDirection="column" height="100%" overflow="hidden" >
                             <Box height="50vh">
-                                <img src="/ricettabase" alt={recipeData?.title} />
+                                <img src={recipeData?.imageURL} alt={recipeData?.title} />
                             </Box>
-                            <Box border="2px solid brown" padding="20px" borderRadius="17px" sx={{ backgroundColor: "#FFF7EE", overflowY: "auto" }}>
+                            <Box border="2px solid #4e342e" padding="20px" borderRadius="17px" sx={{ backgroundColor: "#FFF7EE", overflowY: "auto" }}>
                                 {recipeData ? (
-                                    <Typography>{recipeData.preparation}</Typography>
+                                    parse(sanitizedHtml)
                                 ) : (<CircularProgress />)}
                             </Box>
                         </Box>

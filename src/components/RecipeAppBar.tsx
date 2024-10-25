@@ -1,11 +1,12 @@
+
 import React, { useRef, useState, useLayoutEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { getLoggedUser } from '../redux/recipeSlice'
 import {
     AppBar,
+    Avatar,
     Box,
     Button,
-    ClickAwayListener,
     Grow,
     IconButton,
     MenuItem,
@@ -17,11 +18,12 @@ import {
     Typography,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
-import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { useNavigate } from 'react-router'
 import { Search } from '@mui/icons-material'
 import { useAppDispatch } from '../redux/hooks'
 import { fetchLogout } from '../redux/thunks'
+import defaultChef from 
+'../assets/default_chef.jpeg'
 
 export const RecipeAppBar = () => {
 
@@ -44,14 +46,17 @@ export const RecipeAppBar = () => {
         }
     }, []);
 
+
     const handleHomeClick = () => {
         navigate('/');
     }
 
     const handleUserButtonClick = () => {
-        if (!userLoggedIn) navigate('/sign-in')
+        if (!userLoggedIn) {
+            navigate('/sign-in');
+        }
         else {
-            setOpenUserMenu((prevState) => !prevState)
+            setOpenUserMenu((prevState) => !prevState);
         }
     }
 
@@ -65,13 +70,18 @@ export const RecipeAppBar = () => {
         navigate('/');
     }
 
+    const handleChangeSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(event.target.value);
+    }
+
     const handleSearchSubmit = () => {
         if (searchTerm !== '')
             navigate(`/search?term=${searchTerm}`);
     }
 
+
     return (
-        <AppBar position="static">
+        <AppBar position="sticky" sx={{ height: "64px" }}>
             <Toolbar>
                 <IconButton
                     size="large"
@@ -85,9 +95,15 @@ export const RecipeAppBar = () => {
                 <Typography variant="h6" component="div" onClick={handleHomeClick} sx={{ maxWidth: "fit-content", flexGrow: 1, cursor: "pointer" }}>
                     Recipe App
                 </Typography>
-                <Box marginLeft="auto">
-                    <TextField variant="outlined" value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)} />
-                    <Button onClick={handleSearchSubmit}>
+                <Box marginLeft="auto" marginRight="25px" display="flex" justifyContent="center" alignContent="center">
+                    <TextField 
+                        variant="outlined" 
+                        value={searchTerm} 
+                        onChange={handleChangeSearch}
+                        placeholder='Search...'
+                        sx={{ borderRadius: '15px' }}
+                    />
+                    <Button onClick={handleSearchSubmit} sx={{ marginTop: 'auto', marginBottom: 'auto' }}>
                         <Search />
                     </Button>
                 </Box>
@@ -103,7 +119,11 @@ export const RecipeAppBar = () => {
                             onClick={handleUserButtonClick}
                             onBlur={handleUserButtonClick}
                         >
-                            <AccountCircleIcon />
+                            <Avatar
+                                src={(userLoggedIn.photoURL) ? userLoggedIn.photoURL : defaultChef} 
+                                alt={(userLoggedIn.displayName) ? userLoggedIn.displayName : "Generic chef"}
+                                sx={{ marginRight: "7px" }}
+                            />
                             <Typography>{userLoggedIn.email}</Typography>
                         </IconButton>
                         <Popper
@@ -126,19 +146,15 @@ export const RecipeAppBar = () => {
                                     }}
                                 >
                                     <Paper>
-                                        <ClickAwayListener
-                                            onClickAway={() => { }}
+                                        <MenuList
+                                            id="composition-menu"
+                                            aria-labelledby="composition-button"
                                         >
-                                            <MenuList
-                                                id="composition-menu"
-                                                aria-labelledby="composition-button"
-                                            >
-                                                <MenuItem
-                                                    onClick={handleProfileClick}>Profile</MenuItem>
-                                                <MenuItem
-                                                    onClick={handleLogoutClick}>Logout</MenuItem>
-                                            </MenuList>
-                                        </ClickAwayListener>
+                                            <MenuItem
+                                                onClick={handleProfileClick}>Profile</MenuItem>
+                                            <MenuItem
+                                                onClick={handleLogoutClick}>Logout</MenuItem>
+                                        </MenuList>
                                     </Paper>
                                 </Grow>
                             )}

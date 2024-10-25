@@ -77,6 +77,25 @@ export const retrieveImageFromURL = async (imageURL: string) : Promise<File | nu
 }
 
 
+export const retrieveChefNameFromId = async (chefId: string) : Promise<string | null> => {
+    try {
+        const chefsRef = collection(db, "Chefs");
+        const chefsQuery = query(chefsRef, where("id", "==", chefId));
+        const querySnapshot = await getDocs(chefsQuery);
+
+        if (!querySnapshot.empty) {
+            const chefData = querySnapshot.docs[0].data();
+            return chefData.name;
+        }
+        else return null;
+    }
+    catch (error) {
+        console.error("Error retrieving chef name from id: ", error);
+        return null;
+    }
+}
+
+
 export const publishNewIngredient = async (ingredientName: string) : Promise<boolean | Error> => {
     const ingredientNameUpperCase = capitalizeFirstLetterAfterSpace(ingredientName);
 

@@ -46,3 +46,27 @@ export function getInitialsForChef(chefName: string | null | undefined) : string
                         .join('');
     return initials;
 }
+
+export function getAlphabeticalShorthandForNumber(value: number | undefined): string {
+    if (value === undefined) {
+        return 'N/A';
+    }
+    if (value > 999) {
+        let shorthand;
+        if (value > 999999) {
+            shorthand = Math.round(value / 1000000 * 10)/10;
+            return (shorthand.toString() + 'M');
+        }
+        if (value > 99999) {
+            shorthand = Math.round(value / 1000);
+            return (shorthand.toString() + 'k');
+        }
+        else {
+            shorthand = Math.round(value / 1000 * 10)/10;
+            return (shorthand.toString() + 'k');
+        }
+    }
+    else {
+        return value.toString();
+    }
+}
