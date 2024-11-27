@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { db, storage } from "../firebase/auth/firebase";
 import { collection, doc, endAt, getCountFromServer, getDoc, getDocs, increment, limit, orderBy, query, startAfter, startAt, updateDoc, where } from "firebase/firestore";
-import { Recipe, RecipeDetails, RecipeOfTheDay } from "./storetypes";
+import { ChefData, Recipe, RecipeDetails, RecipeOfTheDay } from "./storetypes";
 import { RootState } from "./store";
 import { getAuth, signOut } from "firebase/auth";
 import { getDownloadURL, ref } from "firebase/storage";
@@ -64,7 +64,7 @@ export const fetchRecipeOfTheDay = createAsyncThunk('recipe/fetchRecipeOfTheDay'
                         title: randomRecipeData.title,
                         imageURL: imageURL,
                         preparationInBrief: randomRecipeBrief,
-                        chef: (randomRecipeChefName) ? randomRecipeChefName : 'Unknown',
+                        chefName: (randomRecipeChefName) ? randomRecipeChefName : 'Unknown',
                         dateOfFetching: currentDate.toISOString(),
                         minutesNeeded: randomRecipeData.time,
                         difficulty: randomRecipeData.difficulty,
@@ -160,20 +160,41 @@ export const fetchSingleRecipe = createAsyncThunk('recipe/fetchSingleRecipe',
                 const updatedRecipeData = updatedRecipeSnap.data();
                 const recipeImageRef = ref(storage, recipeData.imageURL);
                 const imageURL = await getDownloadURL(recipeImageRef);
+                
+                const chefRef = doc(db, "Chefs", recipeData.chef);
+                await updateDoc(chefRef, { totalViews: increment(1) });
+                const updatedChefSnap = await getDoc(chefRef);
+                const updatedChefData = updatedChefSnap.data();
+                let chefData: ChefData;
+                if (updatedChefData !== undefined) {
+                    // const chefImageRef = ref(storage, updatedChefData.photoURL);
+                    // const photoURL = await getDownloadURL(chefImageRef);
+                    chefData = {
+                        uid: updatedChefData.id,
+                        displayName: updatedChefData.name,
+                        email: updatedChefData.email,
+                        photoURL: '',
+                        likesReceived: updatedChefData.likesReceived,
+                        totalViews: updatedChefData.totalViews,
+                        publishedRecipes: updatedChefData.publishedRecipes
+                    };
+                }
+                else throw new Error("Can't retrieve chef data for the recipe with id " + recipeId);
 
                 if (updatedRecipeData !== undefined) {
-                    const recipeObject = {
-                        id: recipeData.id,
+                    const recipeObject: RecipeDetails = {
+                        id: recipeId,
                         title: recipeData.title,
                         ingredients: recipeData.ingredients,
                         preparation: recipeData.preparation,
-                        chef: recipeData.chef,
-                        minutesNeeded: recipeData.time,
+                        chef: chefData,
+                        minutesNeeded: recipeData.minutesNeeded,
                         difficulty: recipeData.difficulty,
                         views: recipeData.views,
                         likes: recipeData.likes,
+                        likedBy: recipeData.likedBy,
                         imageURL: imageURL
-                    } as RecipeDetails;
+                    }
                     return recipeObject;
                 }    
                 else throw new Error("Can't retrieve the requested recipe with id " + recipeId);

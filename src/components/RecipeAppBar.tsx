@@ -1,6 +1,5 @@
 
 import React, { useRef, useState, useLayoutEffect } from 'react'
-import { useSelector } from 'react-redux'
 import { getLoggedUser } from '../redux/recipeSlice'
 import {
     AppBar,
@@ -20,7 +19,7 @@ import {
 import MenuIcon from '@mui/icons-material/Menu'
 import { useNavigate } from 'react-router'
 import { Search } from '@mui/icons-material'
-import { useAppDispatch } from '../redux/hooks'
+import { useAppDispatch, useAppSelector } from '../redux/hooks'
 import { fetchLogout } from '../redux/thunks'
 import defaultChef from 
 '../assets/default_chef.jpeg'
@@ -36,7 +35,7 @@ export const RecipeAppBar = () => {
 
     const dispatch = useAppDispatch();
 
-    const userLoggedIn = useSelector(getLoggedUser);
+    const userLoggedIn = useAppSelector(getLoggedUser);
 
     const navigate = useNavigate();
 

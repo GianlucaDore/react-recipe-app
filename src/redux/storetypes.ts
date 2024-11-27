@@ -11,6 +11,8 @@ export interface UserData extends UserInfo {
     recipes: Array<Recipe>;
 }
 
+export type ChefData = Omit<UserData, "emailVerified" | "phoneNumber" | "recipes"> ;
+
 export interface Recipe {
     id: string;
     title: string;
@@ -19,21 +21,23 @@ export interface Recipe {
 
 export type Difficulty = ("Easy" | "Medium" | "Hard" | "?");
 
-
 export interface RecipeDetails extends Recipe {
     ingredients: Array<string>;
     preparation: string;
-    chef: string;
+    chef: ChefData;
     minutesNeeded: number;
     difficulty: Difficulty;
     views: number;
     likes: number;
+    likedBy: Array<string>;
 }
+
+export type RecipeToSubmit = Omit<RecipeDetails, "id" | "imageURL" | "chef"> & {chefId: string};  
 
 export interface RecipeOfTheDay extends Recipe {
     preparationInBrief: string;
     dateOfFetching: string;
-    chef: string | null;
+    chefName: string | null;
     minutesNeeded: number;
     difficulty: Difficulty;
     views: number;
@@ -62,5 +66,5 @@ export interface Ingredient {
 }
 
 export interface Experience {
-    level: "Unexperienced" | "Practicing" | "Experienced" | "Top";
+    level: "N/A" | "Unexperienced" | "Practicing" | "Experienced" | "Master";
 }

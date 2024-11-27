@@ -29,8 +29,8 @@ export const RecipeOfTheDay = () => {
 
     const handleRecipeOfTheDayChefClick = (event: React.MouseEvent<HTMLElement>) => {
         event.stopPropagation();
-        if (recipeOfTheDay && recipeOfTheDay.chef) {
-            navigate(`/user/${recipeOfTheDay.chef}`);
+        if (recipeOfTheDay && recipeOfTheDay.chefName) {
+            navigate(`/user/${recipeOfTheDay.chefName}`);
         }
     }
 
@@ -49,7 +49,7 @@ export const RecipeOfTheDay = () => {
                     <Typography variant="h3" color="white">{recipeOfTheDay?.title}</Typography>
                     <Box>
                         <Typography variant="body2" color="goldenrod">
-                            Chef: {recipeOfTheDay?.chef} - Time: {recipeOfTheDay?.minutesNeeded} mins - Difficulty: {recipeOfTheDay?.difficulty}
+                            Chef: {recipeOfTheDay?.chefName} - Time: {recipeOfTheDay?.minutesNeeded} mins - Difficulty: {recipeOfTheDay?.difficulty}
                         </Typography>
                     </Box>
                     <Typography variant="body1" color="#fff5e1" width="75%" textAlign="center">
@@ -60,8 +60,8 @@ export const RecipeOfTheDay = () => {
                 <Box width="50%" paddingRight="50px">
                     <Card sx={{ position: 'relative', overflow: 'hidden', height: '100%' }}>
                         <CardHeader 
-                            avatar={<Avatar>{getInitialsForChef(recipeOfTheDay?.chef)}</Avatar>}
-                            title={recipeOfTheDay?.chef}
+                            avatar={<Avatar>{getInitialsForChef(recipeOfTheDay?.chefName)}</Avatar>}
+                            title={recipeOfTheDay?.chefName}
                             onClick={handleRecipeOfTheDayChefClick}
                             sx={{ position: 'relative', zIndex: 2 }}
                         />

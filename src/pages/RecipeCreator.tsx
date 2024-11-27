@@ -10,7 +10,7 @@ import { Close } from "@mui/icons-material";
 import { RecipeEditorMemoized } from "../components/RecipeEditor";
 import { publishNewRecipe } from "../utils/apicalls";
 import { RecipeImageMemoized } from "../components/RecipeImage";
-import { Difficulty, RecipeDetails } from "../redux/storetypes";
+import { Difficulty, RecipeToSubmit } from "../redux/storetypes";
 import { RecipeNamerMemoized } from "../components/RecipeNamer";
 
 
@@ -96,11 +96,12 @@ export const RecipeCreator = () => {
         else {
             try {
                 if (recipeCreated.image) {
-                    const recipeCreatedWithDetails: Omit<RecipeDetails, "id" | "imageURL"> = {
+                    const recipeCreatedWithDetails: RecipeToSubmit = {
                         ...recipeCreated,
-                        chef: loggedUser!.uid,
+                        chefId: loggedUser!.uid,
                         views: 0,
-                        likes: 0
+                        likes: 0,
+                        likedBy: []
                     }
                     const retValue = await publishNewRecipe(recipeCreatedWithDetails, recipeCreated.image);
                     if (retValue) setToaster({

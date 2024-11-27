@@ -1,5 +1,13 @@
 import { createTheme, ThemeOptions } from '@mui/material/styles';
 
+export const colors = {
+  primary: '#3B2F2F',
+  secondary: '#FF5722',
+  tertiary: '#FFF7EE',
+  likePrimary: '#EF6F82',
+  likeSecondary: '#FFC1CC'
+}
+
 export const themeOptions: ThemeOptions = {
   palette: {
     mode: 'light',
@@ -34,6 +42,24 @@ export const themeOptions: ThemeOptions = {
     },
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        '::-webkit-scrollbar': {
+          width: '12px',
+        },
+        '::-webkit-scrollbar-track': {
+          background: '#fff5e1',
+        },
+        '::-webkit-scrollbar-thumb': {
+          backgroundColor: '#3B2F2F',
+          borderRadius: '10px',
+          border: '3px solid #fff5e1',
+        },
+        '::-webkit-scrollbar-thumb:hover': {
+          backgroundColor: '#4A3A3A',
+        },
+      },
+    },
     MuiCard: {
       styleOverrides: {
         root: {
@@ -107,6 +133,30 @@ export const themeOptions: ThemeOptions = {
         },
       },
     },
+    MuiAccordionSummary: {
+      styleOverrides: {
+        root: {
+          textAlign: "center",
+          '&:hover': {
+            fontWeight: '900'
+          },
+          '&.Mui-expanded': {
+            fontWeight: '900',
+          },
+        }
+      }
+    },
+    MuiAccordionDetails: {
+      styleOverrides: {
+        root: {
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          rowGap: "10px"
+        }
+      }
+    }
   }
 };
 

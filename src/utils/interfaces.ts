@@ -8,7 +8,7 @@ export interface ToasterData {
     key: string | null;
 }
 
-export interface RecipeCreatedState extends Omit<RecipeDetails, "id" |"views" | "likes" | "chef" > {
+export interface RecipeCreatedState extends Omit<RecipeDetails, "id" |"views" | "likes" | "chef" | "likedBy" > {
     image: File | null;
 }
 

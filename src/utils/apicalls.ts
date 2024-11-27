@@ -1,9 +1,10 @@
 import { getAuth, User } from "firebase/auth";
-import { addDoc, collection, doc, endAt, getDocs, orderBy, query, setDoc, startAt, where } from "firebase/firestore";
+import { addDoc, arrayRemove, arrayUnion, collection, doc, endAt, getDoc, getDocs, increment, orderBy, query, setDoc, startAt, updateDoc, where } from "firebase/firestore";
 import { auth, db, storage } from "../firebase/auth/firebase";
 import { capitalizeFirstLetterAfterSpace, createImageFileName } from "./helpers";
-import { Ingredient, IngredientSuggestion, RecipeDetails } from "../redux/storetypes";
+import { ChefData, Ingredient, IngredientSuggestion, RecipeToSubmit } from "../redux/storetypes";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { ChefTitleProps } from "../components/ChefTitle";
 
 export const insertNewChefInDatabase = async (user: User) : Promise<boolean> => {
     const userRef = collection(db, 'Chefs');
@@ -96,6 +97,33 @@ export const retrieveChefNameFromId = async (chefId: string) : Promise<string | 
 }
 
 
+export const retrieveChefDataFromId = async (chefId: string) : Promise<ChefData> => {
+    try {
+        const chefsRef = collection(db, "Chefs");
+        const chefsQuery = query(chefsRef, where("id", "==", chefId));
+        const querySnapshot = await getDocs(chefsQuery);
+
+        if (!querySnapshot.empty) {
+            const chefData = querySnapshot.docs[0].data();
+            return {
+                uid: chefData.id,
+                displayName: chefData.name,
+                email: chefData.email,
+                photoURL: chefData.photoURL,
+                likesReceived: chefData.likesReceived,
+                totalViews: chefData.totalViews,
+                publishedRecipes: chefData.publishedRecipes
+            } as ChefData;
+        }
+        else throw new Error("Error: chef with id " + chefId + " has no data!");
+    }
+    catch (error) {
+        console.error("Error retrieving chef data with id " + chefId + ": ", error);
+        throw new Error(error as string);
+    }
+}
+
+
 export const publishNewIngredient = async (ingredientName: string) : Promise<boolean | Error> => {
     const ingredientNameUpperCase = capitalizeFirstLetterAfterSpace(ingredientName);
 
@@ -123,7 +151,7 @@ export const publishNewIngredient = async (ingredientName: string) : Promise<boo
 }
 
 
-export const publishNewRecipe = async (recipe: Omit<RecipeDetails, "id" | "imageURL">, image: File) : Promise<boolean | Error> => {
+export const publishNewRecipe = async (recipe: RecipeToSubmit, image: File) : Promise<boolean | Error> => {
     const recipeTitleUpperCase = capitalizeFirstLetterAfterSpace(recipe.title);
 
     const imageFileName = createImageFileName(recipe.title, image.type);
@@ -151,7 +179,7 @@ export const publishNewRecipe = async (recipe: Omit<RecipeDetails, "id" | "image
                         imageURL: imageURL,
                         ingredients: recipe.ingredients,
                         preparation: recipe.preparation,
-                        chef: recipe.chef,
+                        chef: recipe.chefId,
                         minutesNeeded: recipe.minutesNeeded,
                         difficulty: recipe.difficulty,
                         views: 0,
@@ -176,4 +204,87 @@ export const publishNewRecipe = async (recipe: Omit<RecipeDetails, "id" | "image
     else {
         throw new Error("Unsupported image format.");
     } 
+}
+
+export const addLikeToRecipe = async (chefWhoLikedId: string, chefWhoGotLikedId: string, recipeId: string) : Promise<boolean> => {
+    const recipeRef = doc(db, "Recipes", recipeId);
+
+    try {
+        const recipeSnap = await getDoc(recipeRef);
+        const recipeData = recipeSnap.data();
+
+        if (recipeData !== undefined) {
+            await updateDoc(recipeRef, { likes: increment(1), likedBy: arrayUnion(chefWhoLikedId) });
+            const chefRef = doc(db, "Chefs", chefWhoGotLikedId);
+            const chefSnap = await getDoc(chefRef);
+            const chefData = chefSnap.data();
+
+            if (chefData !== undefined) {
+                await updateDoc(chefRef, { likesReceived: increment(1) });
+                return true;
+            }
+            else return false;
+        }
+    }
+    catch (error) {
+        throw new Error(error as string);
+    }
+
+    return false;
+}
+
+
+export const removeLikeFromRecipe = async (chefWhoUnlikedId: string, chefWhoGotUnlikedId: string, recipeId: string) : Promise<boolean> => {
+    const recipeRef = doc(db, "Recipes", recipeId);
+
+    try {
+        const recipeSnap = await getDoc(recipeRef);
+        const recipeData = recipeSnap.data();
+
+        if (recipeData !== undefined) {
+            await updateDoc(recipeRef, { likes: increment(-1), likedBy: arrayRemove(chefWhoUnlikedId) });
+            const chefRef = doc(db, "Chefs", chefWhoGotUnlikedId);
+            const chefSnap = await getDoc(chefRef);
+            const chefData = chefSnap.data();
+
+            if (chefData !== undefined) {
+                await updateDoc(chefRef, { likesReceived: increment(-1) });
+                return true;
+            }
+            else return false;
+        }
+    }
+    catch (error) {
+        throw new Error(error as string);
+    }
+
+    return false;
+}
+
+
+export const fetchLikedByBatch = async (likedBy: Array<string>, page: number) : Promise<ChefTitleProps[]> => {
+    const numberOfItemsInABatch = 15;
+    const start = numberOfItemsInABatch * page;
+    const end = start + numberOfItemsInABatch;
+
+    const promiseArray = likedBy
+                .slice(start, end)
+                .map(async (l) => {
+                    return await retrieveChefDataFromId(l);
+                });
+    try {
+        const chefDataBatchResponse = await Promise.all(promiseArray);
+        const chefDataBatch: Array<ChefTitleProps> = chefDataBatchResponse.map(d => {
+            return {
+                chefData: d,
+                showFullDetails: true
+            } as ChefTitleProps
+        }) 
+        return chefDataBatch;
+    }
+    catch (error) {
+        console.error("Error retrieving batch of likes for the recipe: ", error);
+        throw new Error(error as string);
+    }
+
 }

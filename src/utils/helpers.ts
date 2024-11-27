@@ -1,4 +1,4 @@
-import { Experience, UserData } from "../redux/storetypes";
+import { ChefData, Experience } from "../redux/storetypes";
 
 export function capitalizeFirstLetterAfterSpace(string: string) : string {
     const pattern = /\b\w+\b/g; 
@@ -24,15 +24,17 @@ export function createImageFileName(recipeTitle: string, extension: string) : st
         return false;
 }
 
-export function calculateChefExperience(userData: UserData) : Experience {
-    const userScore = userData.likesReceived * 10 + userData.totalViews + userData.publishedRecipes * 5; 
+export function calculateChefExperience(chefData: ChefData | undefined) : Experience {
+    let experience : Experience = { level: "N/A" };
+    
+    if (chefData) {
+        const userScore = chefData.likesReceived * 10 + chefData.totalViews + chefData.publishedRecipes * 5; 
 
-    let experience : Experience = { level: "Unexperienced" };
-
-    if (userScore > 1000) experience = { level: "Top" };
-    if (userScore <= 1000 && userScore > 750) experience = { level: "Experienced" };
-    if (userScore <= 750 && userScore > 250) experience = { level: "Practicing" };
-    if (userScore <= 250) experience = { level: "Unexperienced" };
+        if (userScore > 1000) experience = { level: "Master" };
+        if (userScore <= 1000 && userScore > 750) experience = { level: "Experienced" };
+        if (userScore <= 750 && userScore > 250) experience = { level: "Practicing" };
+        if (userScore <= 250) experience = { level: "Unexperienced" };
+    }
 
     return experience;
 }
