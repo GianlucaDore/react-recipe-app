@@ -2,7 +2,7 @@ import { getAuth, User } from "firebase/auth";
 import { addDoc, arrayRemove, arrayUnion, collection, doc, endAt, getDoc, getDocs, increment, orderBy, query, setDoc, startAt, updateDoc, where } from "firebase/firestore";
 import { auth, db, storage } from "../firebase/auth/firebase";
 import { capitalizeFirstLetterAfterSpace, createImageFileName } from "./helpers";
-import { ChefData, Ingredient, IngredientSuggestion, RecipeToSubmit } from "../redux/storetypes";
+import { ChefData, Ingredient, IngredientSuggestion, Recipe, RecipeToSubmit } from "../redux/storetypes";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { ChefTitleProps } from "../components/ChefTitle";
 
@@ -65,7 +65,7 @@ export const retrieveImageFromURL = async (imageURL: string) : Promise<File | nu
         const urlParts = imageURL.split('/');
         const fileName = urlParts[urlParts.length - 1];
 
-        const response = await fetch(url);
+        const response = await fetch(url, { mode: 'no-cors' });
         const blob = await response.blob();
 
         const file = new File([blob], fileName, { type: blob.type });
@@ -119,6 +119,74 @@ export const retrieveChefDataFromId = async (chefId: string) : Promise<ChefData>
     }
     catch (error) {
         console.error("Error retrieving chef data with id " + chefId + ": ", error);
+        throw new Error(error as string);
+    }
+}
+
+
+export const retrieveRecipeItems = async (type: string, chefId: string | undefined) : Promise<Recipe[]> => {
+    const retrieveRecipeItemDetails = async (recipeId: string) : Promise<Recipe | null> => {
+        try {
+            const recipeRef = doc(db, "Recipes", recipeId);
+            const recipeSnap = await getDoc(recipeRef);
+            const recipeData = recipeSnap.data();
+            
+
+            if (recipeData !== undefined) {
+                const imagePath = recipeData.imageURL;
+                let imageURL = '';
+                if (imagePath) {
+                    const recipeImageRef = ref(storage, imagePath);
+                    imageURL = await getDownloadURL(recipeImageRef);
+                }
+
+                const recipeItem: Recipe = {
+                    id: recipeId,
+                    title: recipeData.title,
+                    imageURL: imageURL
+                }
+                return recipeItem;
+            }
+            else {
+                console.error("Can't retrieve details for recipe item with id ", recipeId);
+                return null;
+            }
+        }
+        catch (error) {
+            console.error("Can't retrieve details for recipe item with id ", recipeId);
+            return null;
+        }
+    }
+    
+    if (chefId === undefined) return [];
+    
+    try {
+        const chefRef = doc(db, "Chefs", chefId);
+        const chefSnap = await getDoc(chefRef);
+        const chefData = chefSnap.data();
+
+        if (chefData !== undefined) {
+            let recipeIdsArray: string[] = [];
+            if (type === "Recipes") {
+                recipeIdsArray = chefData.recipes;
+            } else if (type === "Likes") {
+                recipeIdsArray = chefData.recipesLiked;
+            } else {
+                throw new Error("Invalid type provided.");
+            }
+            const recipeItemsArray = await Promise.all(
+                recipeIdsArray.map(async (rid) => {
+                    const recipeItem = await retrieveRecipeItemDetails(rid);
+                    return recipeItem;
+                })
+            );
+            return recipeItemsArray.filter((item): item is Recipe => item !== null);
+        } else {
+            throw new Error("Can't retrieve recipe items for the chefId provided.");
+        }
+    }
+    catch (error) {
+        console.error("Can't retrieve recipe items for the chefId provided.");
         throw new Error(error as string);
     }
 }
@@ -287,4 +355,45 @@ export const fetchLikedByBatch = async (likedBy: Array<string>, page: number) : 
         throw new Error(error as string);
     }
 
+}
+
+
+export const updateUserImage = async (userName: string, userId: string, userImage: File) : Promise<string> => {
+    const imageFileName = createImageFileName(userName, userImage.type);
+
+    const user = auth.currentUser;
+    if (!user) {
+        throw new Error("Error: user is not properly authenticated.");
+    }
+
+    if (imageFileName && userImage.size <= 10 * 1024 * 1024 && userImage.type.match(/image\/(jpg|jpeg|png)/)) {
+        const userImageRef = ref(storage, 'public/Chefs/' + imageFileName);
+        const ret = await uploadBytes(userImageRef, userImage);
+
+        if (ret.metadata.size) {
+            const imageURL = userImageRef.fullPath;
+            const userRef = doc(db, 'Chefs', userId);
+
+            if (userRef) {
+                try {
+                    const userImageRef = ref(storage, imageURL);
+                    const imageStorageURL = await getDownloadURL(userImageRef);
+                    await updateDoc(userRef, { photoURL: imageStorageURL });
+                    return imageStorageURL;
+                }
+                catch (error) {
+                    throw new Error(error as string);
+                }
+            }
+            else {
+                throw new Error("Can't find chef with id " + userId);
+            }
+        }
+        else {
+            throw new Error("Failed to upload image.");
+        }    
+    }
+    else {
+        throw new Error("Unsupported image format.");
+    } 
 }

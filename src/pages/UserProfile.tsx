@@ -1,18 +1,26 @@
-import { Avatar, Box, Grid, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material"
+import { Alert, Avatar, Badge, Box, Button, IconButton, Snackbar, Typography } from "@mui/material"
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
-import { getUserData } from "../redux/recipeSlice";
+import { getUserData, setUserImage } from "../redux/recipeSlice";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { fetchUserData } from "../redux/thunks";
 import { RecipeAppBar } from "../components/RecipeAppBar";
 import { UserStats } from "../components/UserStats";
-import { RecipeItem } from "../components/RecipesList";
-import AddBoxIcon from '@mui/icons-material/AddBox';
 import defaultChef from '../assets/default_chef.jpeg';
+import { AddAPhoto, Close, Edit } from "@mui/icons-material";
+import { updateUserImage } from "../utils/apicalls";
+import { ToasterData } from "../utils/interfaces";
+import { UserActivityBox } from "../components/UserActivityBox";
 
 export const UserProfile = () => {
 
-    const [tabMode, setTabMode] = useState<string>("recipes");
+    const [toaster, setToaster] = useState<ToasterData>({
+        open: false,
+        message: "",
+        type: "success",
+        transition: "Slide",
+        key: null
+    });
 
     const { userId } = useParams();
 
@@ -20,7 +28,6 @@ export const UserProfile = () => {
 
     const userData = useAppSelector(getUserData);
 
-    const navigate = useNavigate();
 
     useEffect(() => {
         if (userId) {
@@ -28,15 +35,37 @@ export const UserProfile = () => {
         }
     }, [dispatch, userId]);
 
-    const handleAddNewRecipe = () => {
-        navigate("/add-recipe");
+
+    const handleCloseToaster = () => {
+        setToaster((prevState) => { return { ...prevState, open: false } });
     }
 
-    const handleTabModeChange = (_: React.MouseEvent<HTMLElement>, eventValue: string | null) => {
-        if (eventValue) {
-            setTabMode(eventValue);
+    const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files) {
+            try {
+                const imageURL = await updateUserImage(userData!.displayName!, userData!.uid, event.target.files[0]);
+                dispatch(setUserImage(imageURL));
+                setToaster({
+                    open: true,
+                    message: `Image for chef ${userData!.displayName} updated successfully!`,
+                    type: "success",
+                    transition: "Slide",
+                    key: userData!.uid
+                });
+            }
+            catch (error) {
+                console.error("Error while updating user image: ", error)
+                setToaster({
+                    open: true,
+                    message: (error as Error).message,
+                    type: "error",
+                    transition: "Slide",
+                    key: userData!.uid
+                });
+            }
         }
     }
+
 
     return (
         <>
@@ -44,11 +73,37 @@ export const UserProfile = () => {
             {userData && (
                 <Box width="100%" marginTop="30px" display="flex" flexDirection="column" justifyContent="center" rowGap="50px">
                     <Box display="flex" flexDirection="column" alignItems="center">
-                        <Avatar 
-                            src={(userData.photoURL) ? userData.photoURL : defaultChef} 
-                            alt={(userData.displayName) ? userData.displayName : "Generic chef"}
-                            sx={{ width: 120, height: 120 }}
-                        />
+                        <Badge overlap="circular" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                            badgeContent={userData.photoURL ? 
+                                <Button sx={{ padding: 0 }}>
+                                    <IconButton aria-label="Upload picture..." component="label" sx={{ color: "white", padding: 0 }}>
+                                    <Edit />
+                                    <input 
+                                        type="file"
+                                        accept="image/*"
+                                        hidden
+                                        onChange={handleImageChange}
+                                    />
+                                </IconButton>
+                                </Button>
+                                
+                                :   <IconButton color="warning" aria-label="Upload picture..." component="label">
+                                        <AddAPhoto />
+                                        <input 
+                                            type="file"
+                                            accept="image/*"
+                                            hidden
+                                            onChange={handleImageChange}
+                                        />
+                                    </IconButton>
+                            }
+                        >
+                            <Avatar 
+                                src={(userData.photoURL) ? userData.photoURL : defaultChef} 
+                                alt={(userData.displayName) ? userData.displayName : "Generic chef"}
+                                sx={{ width: 120, height: 120 }}
+                            />
+                        </Badge>
                         <Typography variant="h3">{userData.displayName}</Typography>
                         <Typography variant="h6">{userData.email}</Typography>
                     </Box>
@@ -59,64 +114,24 @@ export const UserProfile = () => {
                             publishedRecipes={userData.publishedRecipes} 
                         />
                     </Box>
-                    <Box alignSelf="center" width="90%">
-                        <ToggleButtonGroup
-                            exclusive 
-                            value={tabMode}
-                            onChange={handleTabModeChange} 
-                            aria-label="Select mode"
-                            sx={{ marginLeft: "15px" }}
-                        >
-                            <ToggleButton 
-                                value="recipes" 
-                                selected={tabMode === "recipes"}
-                                sx={{ 
-                                    borderTopLeftRadius: "15px", 
-                                    borderTopRightRadius: "15px", 
-                                    borderBottomLeftRadius: "0",
-                                    backgroundColor: tabMode === "recipes" ? 'primary.main' : 'inherit',
-                                    color: tabMode === "recipes" ? 'primary.contrastText' : 'inherit'
-                                }}
-                            >
-                                <Typography variant="h6">Recipes</Typography>
-                            </ToggleButton>
-                            <ToggleButton 
-                                value="likes" 
-                                selected={tabMode === "likes"}
-                                sx={{ 
-                                    borderTopLeftRadius: "15px", 
-                                    borderTopRightRadius: "15px", 
-                                    borderBottomRightRadius: "0",
-                                    backgroundColor: tabMode === "likes" ? 'secondary.main' : 'inherit',
-                                    color: tabMode === "likes" ? 'secondary.contrastText' : 'inherit'
-                                }}
-                            >
-                                <Typography variant="h6">Likes</Typography>
-                            </ToggleButton>
-                        </ToggleButtonGroup>
-                        <Box border="2px solid #4e342e" borderRadius="15px" sx={{ backgroundColor: "#FFF7EE" }}>
-                            <Grid container spacing={2}>
-                                {tabMode === "recipes" && (
-                                    <>
-                                        {userData.uid === userId && (
-                                            <Grid item xs={12}>
-                                                <AddBoxIcon onClick={handleAddNewRecipe}>
-                                                    Create a new recipe
-                                                </AddBoxIcon>
-                                            </Grid>
-                                        )}
-                                        {userData.recipes.map((recipe) => (
-                                            <Grid item xs={4} key={recipe.id}>
-                                                <RecipeItem recipe={recipe} />
-                                            </Grid>
-                                        ))}
-                                    </>
-                                )}
-                            </Grid>
-                        </Box>
-                    </Box>
+                    <UserActivityBox />
                 </Box>
             )}
+            <Snackbar 
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                autoHideDuration={4000}
+                open={toaster.open}
+                key={toaster.key}
+                onClose={handleCloseToaster}
+                sx={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}
+            >
+                <Alert severity={toaster.type} variant="filled" sx={{display:"flex", flexDirection:"row", alignItems: "center"}}>
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography>{toaster.message}</Typography>
+                        <Close onClick={handleCloseToaster} sx={{ marginLeft: "2%", cursor: "pointer" }}/>
+                    </Box>
+                </Alert>
+            </Snackbar>
         </>
     );
 }

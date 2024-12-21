@@ -54,7 +54,7 @@ const RecipeImage = (props: RecipeImageProps) => {
 
     const handleImageRemoval = () => {
         if (fileInputRef.current) {  
-            fileInputRef.current.value = ''; // Manually clean the image file input. 
+            fileInputRef.current.value = ''; 
         }
         setSelectedImage(null);
         dispatcher({ type: "edit-image", payload: '' });

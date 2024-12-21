@@ -252,7 +252,7 @@ export const fetchUserData = createAsyncThunk('recipe/fetchUserData',
                 emailVerified: true,
                 lastSignInTime: "N/A",
                 phoneNumber: "N/A",
-                photoURL: "",
+                photoURL: userData.photoURL,
                 likesReceived: userData.likesReceived,
                 totalViews: userData.totalViews,
                 publishedRecipes: userData.publishedRecipes

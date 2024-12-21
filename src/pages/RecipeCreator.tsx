@@ -147,13 +147,13 @@ export const RecipeCreator = () => {
                             autoHideDuration={4000}
                             open={toaster.open}
                             key={toaster.key}
-                            onClose={() => handleCloseToaster()}
+                            onClose={handleCloseToaster}
                             sx={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}
                         >
                             <Alert severity={toaster.type} variant="filled" sx={{display:"flex", flexDirection:"row", alignItems: "center"}}>
                                 <Box display="flex" justifyContent="space-between" alignItems="center">
                                     <Typography>{toaster.message}</Typography>
-                                    <Close onClick={() => handleCloseToaster()} sx={{ marginLeft: "2%", cursor: "pointer" }}/>
+                                    <Close onClick={handleCloseToaster} sx={{ marginLeft: "2%", cursor: "pointer" }}/>
                                 </Box>
                             </Alert>
                         </Snackbar>

@@ -44,7 +44,7 @@ export const RecipesList = (props: RecipesListProps) => {
 }
 
 
-interface RecipeItemProps {
+export interface RecipeItemProps {
     recipe: Recipe
 }
 

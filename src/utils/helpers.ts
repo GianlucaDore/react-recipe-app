@@ -9,16 +9,16 @@ export function capitalizeFirstLetterAfterSpace(string: string) : string {
     return result;
 }
 
-export function createImageFileName(recipeTitle: string, extension: string) : string | boolean {
-    const recipeTitleUnderscored = recipeTitle.replace(' ', '_');
+export function createImageFileName(title: string, extension: string) : string | boolean {
+    const titleUnderscored = title.replace(' ', '_');
     if (extension.match('/jpg')) {
-        return recipeTitleUnderscored + '.jpg';
+        return titleUnderscored + '.jpg';
     }
     if (extension.match('/jpeg')) {
-        return recipeTitleUnderscored + '.jpeg';
+        return titleUnderscored + '.jpeg';
     }
     if (extension.match('/png')) {
-        return recipeTitleUnderscored + '.png';
+        return titleUnderscored + '.png';
     }
     else 
         return false;

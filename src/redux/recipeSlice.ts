@@ -22,12 +22,18 @@ export const recipeSlice = createSlice({
         setUser: (state, action) => {
             state.loggedUser = action.payload;
         },
+        setUserImage: (state, action) => {
+            state.selectedUserData!.photoURL = action.payload;
+            if (state.selectedUserData!.uid === state.loggedUser?.uid) {
+                state.loggedUser.photoURL = action.payload;
+            }
+        },
         setRecipeLikedBy: (state, action) => {
             state.currentRecipe!.likedBy = action.payload;
         },
         setRecipeLikes: (state, action) => {
             state.currentRecipe!.likes = action.payload;
-        },
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -121,7 +127,7 @@ export const getNumberOfPagesInHome = (state: RootState) => state.recipe.numberO
 export const getCurrentRecipe = (state: RootState) => state.recipe.currentRecipe;
 export const getSearchResults = (state: RootState) => state.recipe.searchResults;
 
-export const { setUser, setRecipeLikedBy, setRecipeLikes } = recipeSlice.actions;
+export const { setUser, setUserImage, setRecipeLikedBy, setRecipeLikes } = recipeSlice.actions;
 
 
 export default recipeSlice.reducer;
