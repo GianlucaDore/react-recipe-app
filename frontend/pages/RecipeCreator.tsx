@@ -8,7 +8,7 @@ import { IngredientsSelectorMemoized } from "../components/IngredientsSelector";
 import { RecipeCreatedAction, RecipeCreatedState, ToasterData } from "../utils/interfaces";
 import { Close } from "@mui/icons-material";
 import { RecipeEditorMemoized } from "../components/RecipeEditor";
-import { publishNewRecipe } from "../utils/apicalls";
+import { usePublishRecipeMutation } from "../redux/apiSlice";
 import { RecipeImageMemoized } from "../components/RecipeImage";
 import { Difficulty, RecipeToSubmit } from "../redux/storetypes";
 import { RecipeNamerMemoized } from "../components/RecipeNamer";
@@ -72,12 +72,15 @@ export const RecipeCreator = () => {
 
     const navigate = useNavigate();
 
+    const [publishRecipe] = usePublishRecipeMutation();
+
     useEffect(() => {
         if (!loggedUser) {
             alert("You must sign in before.");
             navigate('/sign-in');
         }
     }, [loggedUser, navigate]);
+
 
     const handleCloseToaster = () => {
         setToaster((prevState) => { return { ...prevState, open: false} });
@@ -103,7 +106,7 @@ export const RecipeCreator = () => {
                         likes: 0,
                         likedBy: []
                     }
-                    const retValue = await publishNewRecipe(recipeCreatedWithDetails, recipeCreated.image);
+                    const retValue = await publishRecipe({ recipe: recipeCreatedWithDetails, image: recipeCreated.image });
                     if (retValue) setToaster({
                         open: true,
                         message: `New recipe "${recipeCreated?.title}" published successfully!`,
@@ -128,38 +131,36 @@ export const RecipeCreator = () => {
         
     
     return (
-        <>
-            <Box display="flex" flexDirection="column" minHeight="100vh">
-                <RecipeAppBar />
-                <RecipeCreatedContext.Provider value={recipeCreated}>
-                    <Box display="flex" flexDirection="row" width="100%" justifyContent="space-evenly">
-                        <Box flexDirection="column" height="100%" width="50%">
-                            <IngredientsSelectorMemoized setToaster={setToaster} dispatcher={recipeCreatedDispatch}/>
-                            <RecipeNamerMemoized dispatcher={recipeCreatedDispatch} />
-                        </Box>
-                        <Box display="flex" flexDirection="column" height="100%" alignItems="center">
-                            <RecipeImageMemoized dispatcher={recipeCreatedDispatch} currentImageURL={recipeCreated.imageURL}/>
-                            <RecipeEditorMemoized dispatcher={recipeCreatedDispatch} />
-                            <Button onClick={handleSubmitRecipe}>Submit</Button>
-                        </Box>
-                        <Snackbar 
-                            anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                            autoHideDuration={4000}
-                            open={toaster.open}
-                            key={toaster.key}
-                            onClose={handleCloseToaster}
-                            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}
-                        >
-                            <Alert severity={toaster.type} variant="filled" sx={{display:"flex", flexDirection:"row", alignItems: "center"}}>
-                                <Box display="flex" justifyContent="space-between" alignItems="center">
-                                    <Typography>{toaster.message}</Typography>
-                                    <Close onClick={handleCloseToaster} sx={{ marginLeft: "2%", cursor: "pointer" }}/>
-                                </Box>
-                            </Alert>
-                        </Snackbar>
+        <Box display="flex" flexDirection="column" minHeight="100vh">
+            <RecipeAppBar />
+            <RecipeCreatedContext.Provider value={recipeCreated}>
+                <Box display="flex" flexDirection="row" width="100%" justifyContent="space-evenly">
+                    <Box flexDirection="column" height="100%" width="50%">
+                        <IngredientsSelectorMemoized setToaster={setToaster} dispatcher={recipeCreatedDispatch}/>
+                        <RecipeNamerMemoized dispatcher={recipeCreatedDispatch} />
                     </Box>
-                </RecipeCreatedContext.Provider>
-            </Box>       
-        </>
+                    <Box display="flex" flexDirection="column" height="100%" alignItems="center">
+                        <RecipeImageMemoized dispatcher={recipeCreatedDispatch} currentImageURL={recipeCreated.imageURL}/>
+                        <RecipeEditorMemoized dispatcher={recipeCreatedDispatch} />
+                        <Button onClick={handleSubmitRecipe}>Submit</Button>
+                    </Box>
+                    <Snackbar 
+                        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                        autoHideDuration={4000}
+                        open={toaster.open}
+                        key={toaster.key}
+                        onClose={handleCloseToaster}
+                        sx={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}
+                    >
+                        <Alert severity={toaster.type} variant="filled" sx={{display:"flex", flexDirection:"row", alignItems: "center"}}>
+                            <Box display="flex" justifyContent="space-between" alignItems="center">
+                                <Typography>{toaster.message}</Typography>
+                                <Close onClick={handleCloseToaster} sx={{ marginLeft: "2%", cursor: "pointer" }}/>
+                            </Box>
+                        </Alert>
+                    </Snackbar>
+                </Box>
+            </RecipeCreatedContext.Provider>
+        </Box>       
     )
 }

@@ -3,7 +3,7 @@ import { Box, IconButton } from "@mui/material"
 import { Dispatch, useCallback, useEffect, useRef, useState } from "react"
 import { RecipeCreatedAction } from "../utils/interfaces"
 import { withImage } from "../utils/hocs"
-import { retrieveImageFromURL } from "../utils/apicalls"
+import { retrieveImageFromURL } from "../utils/DEPRECATED_apicalls"
 
 interface RecipeImageProps {
     dispatcher: Dispatch<RecipeCreatedAction>;

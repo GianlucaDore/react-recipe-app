@@ -8,7 +8,7 @@ import { RecipeAppBar } from "../components/RecipeAppBar";
 import { UserStats } from "../components/UserStats";
 import defaultChef from '../assets/default_chef.jpeg';
 import { AddAPhoto, Close, Edit } from "@mui/icons-material";
-import { updateUserImage } from "../utils/apicalls";
+import { updateUserImage } from "../utils/DEPRECATED_apicalls";
 import { ToasterData } from "../utils/interfaces";
 import { UserActivityBox } from "../components/UserActivityBox";
 

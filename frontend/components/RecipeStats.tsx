@@ -4,10 +4,11 @@ import { AccessAlarm, Favorite, Psychology, Visibility } from "@mui/icons-materi
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { getCurrentRecipe, getLoggedUser, setRecipeLikedBy, setRecipeLikes } from "../redux/recipeSlice";
-import { addLikeToRecipe, fetchLikedByBatch, removeLikeFromRecipe } from "../utils/apicalls";
+import { useAddLikeMutation, useRemoveLikeMutation } from "../redux/apiSlice";
 import { colors } from "../utils/theme";
 import { ChefTitle, ChefTitleProps } from "./ChefTitle";
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { fetchLikedByBatch } from "../utils/DEPRECATED_apicalls";
 
 interface RecipeStatsProps {
     minutesNeeded: number;
@@ -25,10 +26,12 @@ export const RecipeStats = (props: RecipeStatsProps) => {
     const [page, setPage] = useState<number>(0);
 
     const userLoggedIn = useAppSelector(getLoggedUser);
-
     const recipeData = useAppSelector(getCurrentRecipe);
 
     const dispatch = useAppDispatch();
+
+    const [removeLike] = useRemoveLikeMutation();
+    const [addLike] = useAddLikeMutation();
 
     useEffect(() => {
         if (doesUserLikeCurrentRecipe(userLoggedIn?.uid, recipeData?.likedBy) && userLoggedIn && !userLikesIt) {
@@ -40,14 +43,14 @@ export const RecipeStats = (props: RecipeStatsProps) => {
     const handleLikeClick = async () => {
         if (userLoggedIn && recipeData) {
             if (userLikesIt) {
-                const result = await removeLikeFromRecipe(userLoggedIn.uid, recipeData.chef.uid, recipeData.id);
+                const result = await removeLike({ chefWhoUnlikedId: userLoggedIn.uid, chefWhoGotUnlikedId: recipeData.chef.uid, recipeId: recipeData.id });
                 if (result) {
                     dispatch(setRecipeLikedBy(recipeData?.likedBy.filter(l => l !== userLoggedIn.uid)))
                     dispatch(setRecipeLikes(recipeData.likes - 1))
                     setUserLikesIt(false);
                 }
             } else {
-                const result = await addLikeToRecipe(userLoggedIn.uid, recipeData.chef.uid, recipeData.id);
+                const result = await addLike({ chefWhoLikedId: userLoggedIn.uid, chefWhoGotLikedId: recipeData.chef.uid, recipeId: recipeData.id });
                 if (result) {
                     dispatch(setRecipeLikedBy([...recipeData.likedBy, userLoggedIn.uid]))
                     dispatch(setRecipeLikes(recipeData.likes + 1))

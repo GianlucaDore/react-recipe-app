@@ -17,11 +17,9 @@ const RecipeEditor = (props: RecipeEditorProps) => {
     }
     
     return (
-        <>
-            <Box>
-                <ReactQuill theme="snow" value={preparation} onChange={handleChange} />
-            </Box>
-        </>
+        <Box>
+            <ReactQuill theme="snow" value={preparation} onChange={handleChange} />
+        </Box>
     )
 }
 

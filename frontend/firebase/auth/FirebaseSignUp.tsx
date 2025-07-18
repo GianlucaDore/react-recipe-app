@@ -1,9 +1,9 @@
 import { Alert, Box, Button, Grid, TextField, Typography } from "@mui/material";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import React, { useState } from "react";
+import React, { ReactElement, useState } from "react";
 import { useNavigate } from "react-router";
 import { auth } from "./firebase";
-import { insertNewChefInDatabase } from "../../utils/apicalls";
+import { useInsertNewChefMutation } from "../../redux/apiSlice";
 
 export const FirebaseSignup = () => {
     const navigate = useNavigate();
@@ -13,7 +13,9 @@ export const FirebaseSignup = () => {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
-    let passwordMismatch = null;
+    const [insertNewChef] = useInsertNewChefMutation();
+
+    let passwordMismatch: ReactElement | null = null;
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -23,7 +25,7 @@ export const FirebaseSignup = () => {
             try {
                 const userCreated = await createUserWithEmailAndPassword(auth, email, password );
                 await updateProfile(userCreated.user, { displayName: displayName });
-                await insertNewChefInDatabase(userCreated.user);
+                await insertNewChef(userCreated.user);
                 navigate("/sign-in");
             }
             catch {

@@ -1,54 +1,43 @@
 import { Box, Button, CircularProgress, Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { RecipeItem } from './RecipesList'
 import { useAppSelector } from '../redux/hooks'
 import { getLoggedUser, getUserData } from '../redux/recipeSlice'
-import { retrieveRecipeItems } from '../utils/apicalls'
+import { useGetRecipeItemsQuery } from '../redux/apiSlice'
 import { Recipe } from '../redux/storetypes'
 import { colors } from '../utils/theme'
 import { PostAdd } from '@mui/icons-material'
+import { skipToken } from '@reduxjs/toolkit/query'
 
 export const UserActivityBox = () => {
-    const [tabMode, setTabMode] = useState<string>('Recipes')
-    const [recipeItems, setRecipeItems] = useState<Recipe[]>([])
-    const [loading, setLoading] = useState<boolean>(false)
+    const [tabMode, setTabMode] = useState<string>('Recipes');
+    const [recipeItems, setRecipeItems] = useState<Recipe[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
 
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
-    const userData = useAppSelector(getUserData)
-    const loggedUser = useAppSelector(getLoggedUser)
+    const userData = useAppSelector(getUserData);
+    const loggedUser = useAppSelector(getLoggedUser);
 
-    const fetchRecipeItems = useCallback(async (type: string, userId: string) => {
-        setLoading(true);
-        try {
-            const recipeItemsFetched = await retrieveRecipeItems(type, userId);
-            setRecipeItems(recipeItemsFetched);
-        } catch (error) {
-            console.error('Error fetching chef data: ', error);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
+    // RTK Query hook: chiamata diretta
+    const { data: recipeItemsFetched, isLoading } = useGetRecipeItemsQuery(
+        userData?.uid ? { type: tabMode, chefId: userData.uid } : skipToken
+    );
 
     useEffect(() => {
-        if (userData?.uid) {
-            fetchRecipeItems(tabMode, userData.uid);
-        }
-    }, [tabMode, userData?.uid, fetchRecipeItems]);
+        setLoading(isLoading);
+        setRecipeItems(recipeItemsFetched ?? []);
+    }, [isLoading, recipeItemsFetched]);
 
 
     const handleAddNewRecipe = () => {
         navigate('/add-recipe')
     }
 
-    const handleTabModeChange = async (_: React.MouseEvent<HTMLElement>, eventValue: string | null) => {
+    const handleTabModeChange = (_: React.MouseEvent<HTMLElement>, eventValue: string | null) => {
         if (eventValue) {
             setTabMode(eventValue);
-            if (userData?.uid) {
-                await fetchRecipeItems(eventValue, userData.uid);
-            }
         }
     };
 

@@ -1,11 +1,11 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { db, storage } from "../firebase/auth/firebase";
-import { collection, doc, endAt, getCountFromServer, getDoc, getDocs, increment, limit, orderBy, query, startAfter, startAt, updateDoc, where } from "firebase/firestore";
-import { ChefData, Recipe, RecipeDetails, RecipeOfTheDay } from "./storetypes";
+import { collection, doc, getCountFromServer, getDoc, getDocs, increment, limit, orderBy, query, startAfter, startAt, updateDoc, where } from "firebase/firestore";
+import { ChefData, Recipe, RecipeDetails, RecipeDisplayed, RecipeOfTheDay } from "./storetypes";
 import { RootState } from "./store";
 import { getAuth, signOut } from "firebase/auth";
 import { getDownloadURL, ref } from "firebase/storage";
-import { retrieveChefNameFromId } from "../utils/apicalls";
+import { retrieveChefNameFromId } from "../utils/DEPRECATED_apicalls";
 
 
 export const fetchLogout = createAsyncThunk('recipe/fetchLogout',
@@ -64,7 +64,7 @@ export const fetchRecipeOfTheDay = createAsyncThunk('recipe/fetchRecipeOfTheDay'
                         title: randomRecipeData.title,
                         imageURL: imageURL,
                         preparationInBrief: randomRecipeBrief,
-                        chefName: (randomRecipeChefName) ? randomRecipeChefName : 'Unknown',
+                        chefName: (randomRecipeChefName) || 'Unknown',
                         dateOfFetching: currentDate.toISOString(),
                         minutesNeeded: randomRecipeData.time,
                         difficulty: randomRecipeData.difficulty,
@@ -119,7 +119,7 @@ export const fetchRecipesBatch = createAsyncThunk('recipe/fetchRecipesBatch',
             const recipesSnap = await getDocs(recipesQuery);
         
             recipesDisplayed = await Promise.all(recipesSnap.docs.map(async (doc) => {
-                const recipeData = doc.data();
+                const recipeData: RecipeDisplayed = doc.data() as RecipeDisplayed;
                 const imagePath = recipeData.imageURL;
 
                 let imageURL = '';
@@ -208,30 +208,6 @@ export const fetchSingleRecipe = createAsyncThunk('recipe/fetchSingleRecipe',
     }
 )
 
-export const fetchSearchResults = createAsyncThunk('recipe/fetchSearchResults',
-    async (text: string) => {
-
-        const fetchResults = async (searchText: string) => {
-            const recipeRef = collection(db, 'Recipes');
-            const recipeQuery = query(recipeRef, orderBy('title'), startAt(searchText), endAt(searchText + '\uf8ff'));
-            const querySnapshot = await getDocs(recipeQuery);
-
-            return querySnapshot.docs.map((doc) => {
-                const recipeData = doc.data();
-                return {
-                    id: doc.id,
-                    title: recipeData.title,
-                    imageURL: recipeData.imageURL
-                } as Recipe;
-            });
-        };
-
-        const searchResultsWithUppercase = text.charAt(0) !== text.charAt(0).toUpperCase() ? await fetchResults(text.charAt(0).toUpperCase() + text.slice(1)) : [];
-        const searchResultsWithLowercase = text.charAt(0) === text.charAt(0).toUpperCase() ? await fetchResults(text.charAt(0).toLowerCase() + text.slice(1)) : [];
-
-        return [...searchResultsWithUppercase, ...searchResultsWithLowercase];
-    }
-)
 
 export const fetchUserData = createAsyncThunk('recipe/fetchUserData',
     async (userId: string) => {

@@ -1,28 +1,13 @@
 
 import React, { useRef, useState, useLayoutEffect } from 'react'
 import { getLoggedUser } from '../redux/recipeSlice'
-import {
-    AppBar,
-    Avatar,
-    Box,
-    Button,
-    Grow,
-    IconButton,
-    MenuItem,
-    MenuList,
-    Paper,
-    Popper,
-    TextField,
-    Toolbar,
-    Typography,
-} from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import { useNavigate } from 'react-router'
 import { Search } from '@mui/icons-material'
+import { AppBar, Avatar, Box, Button, Grow, IconButton, MenuItem, MenuList, Paper, Popper, TextField, Toolbar, Typography } from '@mui/material'
 import { useAppDispatch, useAppSelector } from '../redux/hooks'
 import { fetchLogout } from '../redux/thunks'
-import defaultChef from 
-'../assets/default_chef.jpeg'
+import defaultChef from '../assets/default_chef.jpg';
 
 export const RecipeAppBar = () => {
 

@@ -6,13 +6,13 @@ import { getStorage } from 'firebase/storage';
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBS2FKdmLZXgIvOXgsSh1xJqZ0l6M4_zsg",
-  authDomain: "react-recipe-app-8135c.firebaseapp.com",
-  projectId: "react-recipe-app-8135c",
-  storageBucket: "react-recipe-app-8135c.appspot.com",
-  messagingSenderId: "751051262138",
-  appId: "1:751051262138:web:f33285615bf10f244dda83",
-  measurementId: "G-QFSX08BT7L"
+  apiKey: import.meta.env.VITE_FIREBASE_APIKEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTHDOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECTID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGEBUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGINGSENDERID,
+  appId: import.meta.env.VITE_FIREBASE_APPID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENTID
 };
 
 const app = initializeApp(firebaseConfig);

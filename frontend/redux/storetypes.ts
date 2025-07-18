@@ -32,6 +32,8 @@ export interface RecipeDetails extends Recipe {
     likedBy: Array<string>;
 }
 
+export type RecipeDisplayed = Pick<RecipeDetails, "title"| "imageURL" | "ingredients" | "preparation" | "chef">
+
 export type RecipeToSubmit = Omit<RecipeDetails, "id" | "imageURL" | "chef"> & {chefId: string};  
 
 export interface RecipeOfTheDay extends Recipe {
@@ -51,7 +53,6 @@ export interface RecipeState {
     recipesPerPage: number;
     numberOfPages: number;
     currentRecipe: RecipeDetails | null;
-    searchResults: Array<Recipe> | null;
     recipeOfTheDay: RecipeOfTheDay | null;
 }
 

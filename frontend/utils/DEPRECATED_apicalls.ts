@@ -1,10 +1,11 @@
 import { getAuth, User } from "firebase/auth";
-import { addDoc, arrayRemove, arrayUnion, collection, doc, endAt, getDoc, getDocs, increment, orderBy, query, setDoc, startAt, updateDoc, where } from "firebase/firestore";
+import { addDoc, arrayRemove, arrayUnion, collection, doc, endAt, getDoc, getDocs, increment, limit, orderBy, query, setDoc, startAfter, startAt, updateDoc, where } from "firebase/firestore";
 import { auth, db, storage } from "../firebase/auth/firebase";
 import { capitalizeFirstLetterAfterSpace, createImageFileName } from "./helpers";
 import { ChefData, Ingredient, IngredientSuggestion, Recipe, RecipeToSubmit } from "../redux/storetypes";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { ChefTitleProps } from "../components/ChefTitle";
+
 
 export const insertNewChefInDatabase = async (user: User) : Promise<boolean> => {
     const userRef = collection(db, 'Chefs');
@@ -355,6 +356,59 @@ export const fetchLikedByBatch = async (likedBy: Array<string>, page: number) : 
         throw new Error(error as string);
     }
 
+}
+
+
+export const fetchSearchResultsBatch = async (term: string | null, page: number): Promise<Recipe[]> => {
+    const numberOfItemsInABatch = 15;
+    const start = numberOfItemsInABatch * page;
+
+    const fetchResults = async (searchTerm: string, start: number) => {
+        const recipeRef = collection(db, 'Recipes');
+        let recipeQuery;
+
+        if (start === 0) {
+            recipeQuery = query(recipeRef, orderBy('title'), startAt(searchTerm), endAt(searchTerm + '\uf8ff'), limit(numberOfItemsInABatch));
+        } 
+        else {
+            const previousBatch = await getDocs(query(recipeRef, orderBy('title'), startAt(searchTerm), endAt(searchTerm + '\uf8ff'), limit(start)));
+            const lastVisible = previousBatch.docs[previousBatch.docs.length - 1];
+            recipeQuery = query(recipeRef, orderBy('title'), startAfter(lastVisible), endAt(searchTerm + '\uf8ff'), limit(numberOfItemsInABatch));
+        }
+
+        const querySnapshot = await getDocs(recipeQuery);
+
+        return querySnapshot.docs.map(async (doc) => {
+            const recipeData = doc.data();
+            if (recipeData !== undefined) {
+                const imagePath = recipeData.imageURL;
+                let imageURL = '';
+                if (imagePath) {
+                    const recipeImageRef = ref(storage, imagePath);
+                    imageURL = await getDownloadURL(recipeImageRef);
+                }
+
+                const recipeItem: Recipe = {
+                    id: recipeId,
+                    title: recipeData.title,
+                    imageURL: imageURL
+                }
+                return recipeItem;
+            }
+            return {
+                id: doc.id,
+                title: recipeData.title,
+                imageURL: recipeData.imageURL
+            } as Recipe;
+        });
+    };
+
+    if (term) {
+        const searchResultsWithUppercase = term.charAt(0) !== term.charAt(0).toUpperCase() ? await fetchResults(term.charAt(0).toUpperCase() + term.slice(1), start) : [];
+        const searchResultsWithLowercase = term.charAt(0) === term.charAt(0).toUpperCase() ? await fetchResults(term.charAt(0).toLowerCase() + term.slice(1), start) : [];
+        return [...searchResultsWithUppercase, ...searchResultsWithLowercase];
+    }
+    else return [] as Recipe[];
 }
 
 

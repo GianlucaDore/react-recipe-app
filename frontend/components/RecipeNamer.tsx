@@ -2,10 +2,9 @@ import { Box, MenuItem, TextField, Typography } from "@mui/material"
 import { useEffect, useRef } from "react"
 import { useAppSelector } from "../redux/hooks";
 import { getUserData } from "../redux/recipeSlice";
-import { Experience, UserData } from "../redux/storetypes";
+import { Experience, UserData, Difficulty } from "../redux/storetypes";
 import { calculateChefExperience } from "../utils/helpers";
 import { withDetails } from "../utils/hocs";
-import { Difficulty } from "../redux/storetypes";
 import { RecipeCreatedAction } from "../utils/interfaces";
 
 interface RecipeNamerProps {
