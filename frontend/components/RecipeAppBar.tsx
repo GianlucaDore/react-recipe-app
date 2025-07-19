@@ -67,30 +67,32 @@ export const RecipeAppBar = () => {
     return (
         <AppBar position="sticky" sx={{ height: "64px" }}>
             <Toolbar>
-                <IconButton
-                    size="large"
-                    edge="start"
-                    color="inherit"
-                    aria-label="menu"
-                    sx={{ mr: 2 }}
-                >
-                    <MenuIcon />
-                </IconButton>
                 <Typography variant="h6" component="div" onClick={handleHomeClick} sx={{ maxWidth: "fit-content", flexGrow: 1, cursor: "pointer" }}>
                     Recipe App
-                </Typography>
-                <Box marginLeft="auto" marginRight="25px" display="flex" justifyContent="center" alignContent="center">
-                    <TextField 
-                        variant="outlined" 
-                        value={searchTerm} 
-                        onChange={handleChangeSearch}
-                        placeholder='Search...'
-                        sx={{ borderRadius: '15px' }}
-                    />
-                    <Button onClick={handleSearchSubmit} sx={{ marginTop: 'auto', marginBottom: 'auto' }}>
-                        <Search />
-                    </Button>
+                </Typography>               
+                <Box
+                    marginLeft="auto"
+                    marginRight="25px"
+                    display="flex"
+                    alignItems="center"
+                    gap={1}
+                >
+                <TextField
+                    variant="outlined"
+                    value={searchTerm}
+                    onChange={handleChangeSearch}
+                    placeholder="Search..."
+                    sx={{ height: '40px', borderRadius: '15px', '& .MuiInputBase-root': {height: '100%'}}}
+                />
+                <Button
+                    onClick={handleSearchSubmit}
+                    variant="contained"
+                    sx={{ height: '40px', minWidth: '40px', marginLeft: '-18px', padding: '0 8px', borderTopLeftRadius: '0px', borderBottomLeftRadius: '0px'}}
+                >
+                    <Search />
+                </Button>
                 </Box>
+
                 {userLoggedIn ? (
                     <div>
                         <IconButton

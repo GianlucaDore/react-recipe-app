@@ -6,7 +6,7 @@ import { useParams } from "react-router";
 import { fetchUserData } from "../redux/thunks";
 import { RecipeAppBar } from "../components/RecipeAppBar";
 import { UserStats } from "../components/UserStats";
-import defaultChef from '../assets/default_chef.jpeg';
+import defaultChef from '../assets/default_chef.jpg';
 import { AddAPhoto, Close, Edit } from "@mui/icons-material";
 import { updateUserImage } from "../utils/DEPRECATED_apicalls";
 import { ToasterData } from "../utils/interfaces";

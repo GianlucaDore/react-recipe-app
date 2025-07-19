@@ -27,13 +27,13 @@ export const RecipesList = (props: RecipesListProps) => {
 
     return (
         <>
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={12} md={4}>
                 <RecipeItem recipe={recipesToDisplay[0]} />
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={12} md={4} marginTop={{xs: "15px", sm: "30px", md: "0px"}}>
                 <RecipeItem recipe={recipesToDisplay[1]} />
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={12} md={4} marginTop={{xs: "15px", sm: "30px", md: "0px"}}>
                 <RecipeItem recipe={recipesToDisplay[2]} />
             </Grid>
             <Stack spacing={2} marginTop="15px">

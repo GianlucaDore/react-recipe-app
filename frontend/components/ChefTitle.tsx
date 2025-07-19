@@ -3,7 +3,7 @@ import { ChefData, Experience } from "../redux/storetypes"
 import { useEffect, useState } from "react";
 import { calculateChefExperience } from "../utils/helpers";
 import { Favorite, OpenInNew, Visibility } from "@mui/icons-material";
-import defaultChef from '../assets/default_chef.jpeg';
+import defaultChef from '../assets/default_chef.jpg';
 import { useNavigate } from "react-router";
 
 export interface ChefTitleProps {
