@@ -44,8 +44,8 @@ export const RecipeOfTheDay = () => {
     return (
         <Box display="flex" width="100%" flexDirection={{xs: "column", sm: "column", md: "row" }}>
             <Box width={{sm: "100%", md: "50%"}} display="flex" flexDirection="column" alignItems="center" rowGap="10px">
-                <Typography variant="h1" color="white" fontSize={{ xs: "6rem", md: "3.5rem", lg: "4.5rem", xl: "5rem"}}>Recipe of the day</Typography>
-                <Typography variant="h3" color="white" fontSize={{ xs: "4rem", md: "2.5rem", lg: "3.5rem", xl: "4rem"}}>{recipeOfTheDay?.title}</Typography>
+                <Typography variant="h1" color="white" fontSize={{ xs: "6rem", md: "3.5rem", lg: "4.5rem", xl: "5rem"}} textAlign="center">Recipe of the day</Typography>
+                <Typography variant="h3" color="white" fontSize={{ xs: "4rem", md: "2.5rem", lg: "3.5rem", xl: "4rem"}} textAlign="center">{recipeOfTheDay?.title}</Typography>
                 <Box>
                     <Typography variant="body2" color="goldenrod">
                         Chef: {recipeOfTheDay?.chefName} - Time: {recipeOfTheDay?.minutesNeeded} mins - Difficulty: {recipeOfTheDay?.difficulty}
@@ -56,15 +56,15 @@ export const RecipeOfTheDay = () => {
                 </Typography>
                 <Button onClick={handleReadMoreClick}>Read more</Button>
             </Box>
-            <Box width={{xs: "100%", sm: "75%", md: "50%"}} paddingRight="50px" marginTop={{ sm: "20px" }} marginLeft={{ sm: "auto" }} marginRight={{ sm: "auto"}}>
-                <Card sx={{ position: 'relative', overflow: 'hidden', height: '100%', minHeight: "300px" }}>
+            <Box width={{xs: "100%", sm: "75%", md: "50%"}} paddingRight={{xs: "15px", sm: "0px", md: "50px"}} marginTop="20px" marginLeft={{ sm: "auto" }} marginRight={{ sm: "auto"}}>
+                <Card sx={{ position: 'relative', overflow: 'hidden', height: {xs: "300px", md: "400px"} }}>
                     <CardHeader 
                         avatar={<Avatar>{getInitialsForChef(recipeOfTheDay?.chefName)}</Avatar>}
                         title={recipeOfTheDay?.chefName}
                         onClick={handleRecipeOfTheDayChefClick}
                         sx={{ position: 'relative', zIndex: 2 }}
                     />
-                    <Box sx={{ height: 'calc(100% - 50px - 50px)' }}>
+                    <Box height="calc(100% - 50px - 50px)">
                         <CardMedia
                             component="img"
                             image={recipeOfTheDay?.imageURL}
