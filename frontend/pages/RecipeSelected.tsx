@@ -49,16 +49,16 @@ export const RecipeSelected = () => {
     return (
         <Box display="flex" flexDirection="column" height="100vh">
             <RecipeAppBar />
-            <Grid container spacing={2} direction="row" flexWrap="nowrap" justifyContent="center" alignItems="center" width="100%" height="100%" margin="0px">
-                <Grid item xs={12} md={3} height="100%">
-                    <Box display="flex" flexDirection="column" justifyContent="space-around" height="100%">
-                        <Box display="flex" flexDirection="row" height="25vh">
+            <Grid container spacing={0} width="100%" height="calc(100% - 64px)" direction="row" flexWrap="nowrap" justifyContent="center" alignItems="center" margin="0px" paddingLeft="15px">
+                <Grid item width="30%" height="100%" paddingTop="10px" paddingBottom="7px">
+                    <Box display="flex" flexDirection="column" justifyContent="flex-start" height="100%">
+                        <Box display="flex" flexDirection="row" height="20%">
                             <Typography variant="h2">{recipeData?.title}</Typography>
                         </Box>
                         <Box>
                             <ChefTitle chefData={recipeData?.chef} showFullDetails={true}/>
                         </Box>
-                        <Box width="100%" textAlign="center" display="flex" flexDirection="column" justifyContent="center" sx={ingredientBoxStyle}>
+                        <Box width="100%" textAlign="center" marginTop="auto" display="flex" flexDirection="column" justifyContent="center" sx={ingredientBoxStyle}>
                             <Typography variant="h5">Ingredients</Typography>
                             {recipeData ? (
                                 <List>
@@ -116,13 +116,12 @@ export const RecipeSelected = () => {
                 <Grid item xs={12} md={2} height="100%" alignContent="center" alignItems="center" justifyContent="center">
                     <RecipeStats minutesNeeded={recipeData ? recipeData.minutesNeeded : NaN} difficulty={recipeData ? recipeData.difficulty : "?"} views={recipeData ? recipeData.views : NaN} />
                 </Grid>
-                <Grid item xs={12} md={7} width="100%" height="100%" justifyContent="center" alignItems="center" paddingLeft="25px" paddingRight="25px" sx={{ backgroundColor: '#3B2F2F'}}>
-                    <Box display="flex" flexDirection="column" justifyContent="space-around" height="100%" overflow="hidden" >
-                        <Box width="100%" height="50vh" display="flex" justifyContent="center">
+                <Grid item xs={12} md={7} height="100%" justifyContent="center" alignItems="center" paddingLeft="25px" paddingRight="25px" sx={{ backgroundColor: '#3B2F2F'}}>
+                    <Box height="100%" display="flex" flexDirection="column" justifyContent="space-around">
+                        <Box width="100%" height="50%" display="flex" justifyContent="center">
                             <img height="100%" src={recipeData?.imageURL} alt={recipeData?.title} />
                         </Box>
-                            
-                        <Box border="2px solid #4e342e" padding="20px" borderRadius="17px" sx={{ backgroundColor: "#FFF7EE", overflowY: "auto" }}>
+                        <Box border="2px solid #4e342e" padding="15px 20px" borderRadius="17px" sx={{ backgroundColor: "#FFF7EE", overflowY: "auto" }}>
                             <Typography variant="h5" textAlign="center" marginBottom="5px">Preparation</Typography>
                             {recipeData ? (
                                 parse(sanitizedHtml)

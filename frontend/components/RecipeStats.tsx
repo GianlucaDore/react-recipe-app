@@ -41,21 +41,25 @@ export const RecipeStats = (props: RecipeStatsProps) => {
 
 
     const handleLikeClick = async () => {
-        if (userLoggedIn && recipeData) {
-            if (userLikesIt) {
-                const result = await removeLike({ chefWhoUnlikedId: userLoggedIn.uid, chefWhoGotUnlikedId: recipeData.chef.uid, recipeId: recipeData.id });
-                if (result) {
-                    dispatch(setRecipeLikedBy(recipeData?.likedBy.filter(l => l !== userLoggedIn.uid)))
-                    dispatch(setRecipeLikes(recipeData.likes - 1))
-                    setUserLikesIt(false);
+        if (recipeData) {
+            if (userLoggedIn) {
+                if (userLikesIt) {
+                    const result = await removeLike({ chefWhoUnlikedId: userLoggedIn.uid, chefWhoGotUnlikedId: recipeData.chef.uid, recipeId: recipeData.id });
+                    if (result) {
+                        dispatch(setRecipeLikedBy(recipeData?.likedBy.filter(l => l !== userLoggedIn.uid)))
+                        dispatch(setRecipeLikes(recipeData.likes - 1))
+                        setUserLikesIt(false);
+                    }
+                } else {
+                    const result = await addLike({ chefWhoLikedId: userLoggedIn.uid, chefWhoGotLikedId: recipeData.chef.uid, recipeId: recipeData.id });
+                    if (result) {
+                        dispatch(setRecipeLikedBy([...recipeData.likedBy, userLoggedIn.uid]))
+                        dispatch(setRecipeLikes(recipeData.likes + 1))
+                        setUserLikesIt(true);
+                    }
                 }
             } else {
-                const result = await addLike({ chefWhoLikedId: userLoggedIn.uid, chefWhoGotLikedId: recipeData.chef.uid, recipeId: recipeData.id });
-                if (result) {
-                    dispatch(setRecipeLikedBy([...recipeData.likedBy, userLoggedIn.uid]))
-                    dispatch(setRecipeLikes(recipeData.likes + 1))
-                    setUserLikesIt(true);
-                }
+                console.error("User is not logged in.");
             }
         }
     };
@@ -88,19 +92,19 @@ export const RecipeStats = (props: RecipeStatsProps) => {
     
     return (
         <>
-            <Stack textAlign="center" justifyContent="center" alignItems="center" spacing={{ xs: 1, sm: 2, md: 4 }} direction={{ xs: 'row', sm: 'row', md: 'column' }}>
-                <Box width="50%" padding="20px" border={`2px solid ${colors.primary}`} borderRadius="13px" sx={{ backgroundColor: colors.tertiary }}>
+            <Stack textAlign="center" justifyContent="center" alignItems="center" spacing={{ xs: 1, sm: 2, md: 4 }} direction={{ xs: 'row', sm: 'row', md: 'column' }} >
+                <Box width="60%" padding="20px" border={`2px solid ${colors.primary}`} borderRadius="13px" sx={{ backgroundColor: colors.tertiary }}>
                     <AccessAlarm />
                     <Typography>Preparation:<br /><b>{minutesNeeded} min</b></Typography>
                 </Box>
-                <Box width="50%" padding="20px" border={`2px solid ${colors.primary}`} borderRadius="13px" sx={{ backgroundColor: colors.tertiary }}>
+                <Box width="60%" padding="20px" border={`2px solid ${colors.primary}`} borderRadius="13px" sx={{ backgroundColor: colors.tertiary }}>
                     <Psychology />
                     <Typography>Difficulty:<br /><b>{difficulty}</b></Typography>
                 </Box>
-                <Box width="50%" padding="0px" borderRadius="13px" sx={userLikesIt ? likedStyle : notLikedStyle}>
-                    <Button onClick={handleLikeClick} sx={userLikesIt ? unlikeButtonStyle : likeButtonStyle}>
+                <Box width="60%" padding="0px" borderRadius="13px" sx={userLikesIt ? likedStyle : notLikedStyle}>
+                    <Button onClick={handleLikeClick} sx={userLikesIt && userLoggedIn ? unlikeButtonStyle : likeButtonStyle}>
                         <Favorite sx={{ color: userLikesIt ? colors.likePrimary : colors.primary }} />
-                        <Typography component="p" color={userLikesIt ? colors.likePrimary : colors.primary}>
+                        <Typography color={userLikesIt ? colors.likePrimary : colors.primary}>
                             Likes:<br />
                             <b>{userLikesIt ? (
                                 (recipeData && recipeData?.likedBy.length > 1) ?
@@ -114,7 +118,7 @@ export const RecipeStats = (props: RecipeStatsProps) => {
                         </Typography>
                     </Button>
                 </Box>
-                <Box width="50%" padding="20px" border={`2px solid ${colors.primary}`} borderRadius="13px" sx={{ backgroundColor: colors.tertiary }}>
+                <Box width="60%" padding="20px" border={`2px solid ${colors.primary}`} borderRadius="13px" sx={{ backgroundColor: colors.tertiary }}>
                     <Visibility />
                     <Typography>Views:<br /><b>{views}</b></Typography>
                 </Box>
