@@ -1,5 +1,6 @@
-import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import { configureStore } from '@reduxjs/toolkit';
 import recipeReducer from './recipeSlice';
+import snackbarReducer from './snackbarSlice';
 import storage from 'redux-persist/lib/storage';
 import persistReducer from 'redux-persist/es/persistReducer';
 import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
@@ -10,14 +11,13 @@ const persistConfig = {
     storage
 }
 
-const combinedReducer = combineReducers({
-    recipe: recipeReducer
-});
-
-const persistedReducer = persistReducer(persistConfig, combinedReducer);
+const persistedRecipeReducer = persistReducer(persistConfig, recipeReducer);
 
 export const store = configureStore({
-    reducer: persistedReducer,
+    reducer: {
+        recipe: persistedRecipeReducer,
+        snackbar: snackbarReducer
+    },
     middleware: (getDefaultMiddleware) => 
         getDefaultMiddleware({
             serializableCheck: {

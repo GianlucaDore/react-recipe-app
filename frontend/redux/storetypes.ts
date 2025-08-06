@@ -46,6 +46,7 @@ export interface RecipeOfTheDay extends Recipe {
     likes: number;
 }
 
+
 export interface RecipeState {
     loggedUser: UserInfo | null;
     selectedUserData: UserData | null;
@@ -55,6 +56,19 @@ export interface RecipeState {
     currentRecipe: RecipeDetails | null;
     recipeOfTheDay: RecipeOfTheDay | null;
 }
+
+export interface SnackbarState {
+    open: boolean,
+    autoHideDuration: number,
+    message: string,
+    position: {
+        vertical: 'top' | 'bottom' | 'center',
+        horizontal: 'left' | 'right' | 'center'
+    },
+    severity: "success" | "info" | "warning" | "error",
+    variant: "filled" | "outlined"
+}
+
 
 export interface IngredientSuggestion {
     name: string;
