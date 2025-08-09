@@ -1,6 +1,6 @@
 import { Alert, Snackbar } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
-import { getEntireSnackbar, setClose } from "../redux/snackbarSlice"
+import { getEntireSnackbar, setCloseSnackbar } from "../redux/snackbarSlice"
 import { SnackbarState } from "../redux/storetypes";
 
 export const Toaster = () =>{
@@ -11,7 +11,7 @@ export const Toaster = () =>{
 
 
     const handleCloseSnackbar = () => {
-        dispatch(setClose);
+        dispatch(setCloseSnackbar());
     }
 
 

@@ -1,17 +1,17 @@
-import { createContext, useEffect, useReducer, useState } from "react"
-import { useAppSelector } from "../redux/hooks";
+import { createContext, useEffect, useReducer } from "react"
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { getLoggedUser } from "../redux/recipeSlice";
 import { useNavigate } from "react-router";
 import { RecipeAppBar } from "../components/RecipeAppBar";
-import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { IngredientsSelectorMemoized } from "../components/IngredientsSelector";
-import { RecipeCreatedAction, RecipeCreatedState, ToasterData } from "../utils/interfaces";
-import { Close } from "@mui/icons-material";
+import { RecipeCreatedAction, RecipeCreatedState } from "../utils/interfaces";
 import { RecipeEditorMemoized } from "../components/RecipeEditor";
 import { usePublishRecipeMutation } from "../redux/apiSlice";
 import { RecipeImageMemoized } from "../components/RecipeImage";
-import { Difficulty, RecipeToSubmit } from "../redux/storetypes";
+import { Difficulty, RecipeToSubmit, UserInfo } from "../redux/storetypes";
 import { RecipeNamerMemoized } from "../components/RecipeNamer";
+import { showSnackbarError, showSnackbarSuccess } from "../utils/helpers";
 
 
 function recipeCreatedReducer(state: RecipeCreatedState, action: RecipeCreatedAction): RecipeCreatedState {
@@ -60,15 +60,9 @@ export const RecipeCreator = () => {
 
     const [recipeCreated, recipeCreatedDispatch] = useReducer(recipeCreatedReducer, initialState);
 
-    const [toaster, setToaster] = useState<ToasterData>({
-        open: false,
-        message: "",
-        type: "success",
-        transition: "Slide",
-        key: null
-    });
+    const dispatch = useAppDispatch();
 
-    const loggedUser = useAppSelector(getLoggedUser);
+    const loggedUser: UserInfo | null = useAppSelector(getLoggedUser);
 
     const navigate = useNavigate();
 
@@ -82,49 +76,24 @@ export const RecipeCreator = () => {
     }, [loggedUser, navigate]);
 
 
-    const handleCloseToaster = () => {
-        setToaster((prevState) => { return { ...prevState, open: false} });
-    }
-
     const handleSubmitRecipe = async () => {
         if (!recipeCreated || !recipeCreated.title || !recipeCreated.ingredients || !recipeCreated.preparation || !recipeCreated.minutesNeeded || !recipeCreated.difficulty) {
-            setToaster({
-                open: true,
-                message: "Can't submit a recipe with missing arguments. Please provide all the fields needed.",
-                type: "error",
-                transition: "Slide",
-                key: "Error"
-            })
+            const error = new Error("Can't submit a recipe with missing arguments. Please provide all the fields needed");
+            showSnackbarError(dispatch, error);
         }
         else {
             try {
                 if (recipeCreated.image) {
-                    const recipeCreatedWithDetails: RecipeToSubmit = {
-                        ...recipeCreated,
-                        chefId: loggedUser!.uid,
-                        views: 0,
-                        likes: 0,
-                        likedBy: []
-                    }
+                    const recipeCreatedWithDetails: RecipeToSubmit = fabricateRecipeToSubmit(recipeCreated, loggedUser);
                     const retValue = await publishRecipe({ recipe: recipeCreatedWithDetails, image: recipeCreated.image });
-                    if (retValue) setToaster({
-                        open: true,
-                        message: `New recipe "${recipeCreated?.title}" published successfully!`,
-                        type: "success",
-                        transition: "Slide",
-                        key: recipeCreated.title 
-                    })
+                    if (retValue) {
+                        showSnackbarSuccess(dispatch, `New recipe "${recipeCreated?.title}" published successfully!`);
+                    }
                 }
             }
             catch (error) {
                 console.error("Error while publishing a new recipe in the database: ", error);
-                setToaster({
-                    open: true,
-                    message: (error as Error).message,
-                    type: "error",
-                    transition: "Slide",
-                    key: "Error"
-                });
+                showSnackbarError(dispatch, error);
             }
         }
     }
@@ -136,7 +105,7 @@ export const RecipeCreator = () => {
             <RecipeCreatedContext.Provider value={recipeCreated}>
                 <Box display="flex" flexDirection="row" width="100%" justifyContent="space-evenly">
                     <Box flexDirection="column" height="100%" width="50%">
-                        <IngredientsSelectorMemoized setToaster={setToaster} dispatcher={recipeCreatedDispatch}/>
+                        <IngredientsSelectorMemoized dispatcher={recipeCreatedDispatch}/>
                         <RecipeNamerMemoized dispatcher={recipeCreatedDispatch} />
                     </Box>
                     <Box display="flex" flexDirection="column" height="100%" alignItems="center">
@@ -144,23 +113,20 @@ export const RecipeCreator = () => {
                         <RecipeEditorMemoized dispatcher={recipeCreatedDispatch} />
                         <Button onClick={handleSubmitRecipe}>Submit</Button>
                     </Box>
-                    <Snackbar 
-                        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                        autoHideDuration={4000}
-                        open={toaster.open}
-                        key={toaster.key}
-                        onClose={handleCloseToaster}
-                        sx={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}
-                    >
-                        <Alert severity={toaster.type} variant="filled" sx={{display:"flex", flexDirection:"row", alignItems: "center"}}>
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography>{toaster.message}</Typography>
-                                <Close onClick={handleCloseToaster} sx={{ marginLeft: "2%", cursor: "pointer" }}/>
-                            </Box>
-                        </Alert>
-                    </Snackbar>
                 </Box>
             </RecipeCreatedContext.Provider>
         </Box>       
     )
+}
+
+
+function fabricateRecipeToSubmit(recipeCreated: RecipeCreatedState, loggedUser: UserInfo | null): RecipeToSubmit {
+    const recipeCreatedWithDetails: RecipeToSubmit = {
+        ...recipeCreated,
+        chefId: loggedUser!.uid,
+        views: 0,
+        likes: 0,
+        likedBy: []
+    }
+    return recipeCreatedWithDetails;
 }

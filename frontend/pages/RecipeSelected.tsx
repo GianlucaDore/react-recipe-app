@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { fetchSingleRecipe } from "../redux/thunks";
+import { fetchSingleRecipe, fetchTotalNumberOfPagesInHome } from "../redux/thunks";
 import { getCurrentRecipe } from "../redux/recipeSlice";
 import { RecipeAppBar } from "../components/RecipeAppBar";
 import { Accordion, AccordionDetails, AccordionSummary, Backdrop, Box, Button, CircularProgress, Fade, Grid, LinearProgress, List, Modal, Typography } from "@mui/material";
@@ -11,6 +11,7 @@ import parse from 'html-react-parser';
 import { ExpandMoreRounded, OpenInFull } from "@mui/icons-material";
 import { colors } from "../utils/theme";
 import { ChefTitle } from "../components/ChefTitle";
+import { showSnackbarError } from "../utils/helpers";
 
 
 export const RecipeSelected = () => {
@@ -32,8 +33,20 @@ export const RecipeSelected = () => {
 
 
     useEffect(() => {
-        if (recipeId !== undefined)
-            dispatch(fetchSingleRecipe(recipeId));
+        const fetchSingleRecipeFunction = async () => {
+            if (recipeId === undefined) {
+                showSnackbarError(dispatch, "Invalid recipe ID provided.");
+                return;
+            }
+            try {
+                await dispatch(fetchSingleRecipe(recipeId)).unwrap();
+                await dispatch(fetchTotalNumberOfPagesInHome()).unwrap();
+            } catch (error) {
+                showSnackbarError(dispatch, error);
+            }
+        };
+        fetchSingleRecipeFunction();
+
     }, [dispatch, recipeId]);
 
 
@@ -63,7 +76,7 @@ export const RecipeSelected = () => {
                             {recipeData ? (
                                 <List>
                                     {
-                                        recipeData.ingredients.map((ingredient) => {
+                                        recipeData.ingredients.map((ingredient: string) => {
                                             return (
                                                 <Accordion key={ingredient}>
                                                     <AccordionSummary expandIcon={<ExpandMoreRounded />}>

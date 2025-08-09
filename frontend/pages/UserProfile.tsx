@@ -1,26 +1,18 @@
-import { Alert, Avatar, Badge, Box, Button, IconButton, Snackbar, Typography } from "@mui/material"
+import { Avatar, Badge, Box, Button, IconButton, Typography } from "@mui/material"
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
 import { getUserData, setUserImage } from "../redux/recipeSlice";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams } from "react-router";
 import { fetchUserData } from "../redux/thunks";
 import { RecipeAppBar } from "../components/RecipeAppBar";
 import { UserStats } from "../components/UserStats";
 import defaultChef from '../assets/default_chef.jpg';
-import { AddAPhoto, Close, Edit } from "@mui/icons-material";
+import { AddAPhoto, Edit } from "@mui/icons-material";
 import { updateUserImage } from "../utils/DEPRECATED_apicalls";
-import { ToasterData } from "../utils/interfaces";
 import { UserActivityBox } from "../components/UserActivityBox";
+import { showSnackbarError, showSnackbarSuccess } from "../utils/helpers";
 
 export const UserProfile = () => {
-
-    const [toaster, setToaster] = useState<ToasterData>({
-        open: false,
-        message: "",
-        type: "success",
-        transition: "Slide",
-        key: null
-    });
 
     const { userId } = useParams();
 
@@ -30,38 +22,32 @@ export const UserProfile = () => {
 
 
     useEffect(() => {
-        if (userId) {
-            dispatch(fetchUserData(userId));
+        const fetchUserDataFunction = async () => {
+            if (userId === undefined) {
+                showSnackbarError(dispatch, "Invalid user ID provided.");
+                return;
+            }
+            try {
+                await dispatch(fetchUserData(userId)).unwrap();
+            } catch (error) {
+                showSnackbarError(dispatch, error);
+            }
         }
+        fetchUserDataFunction();
+        
     }, [dispatch, userId]);
 
-
-    const handleCloseToaster = () => {
-        setToaster((prevState) => { return { ...prevState, open: false } });
-    }
 
     const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
             try {
-                const imageURL = await updateUserImage(userData!.displayName!, userData!.uid, event.target.files[0]);
+                const imageURL = await updateUserImage(userData!.displayName, userData!.uid, event.target.files[0]);
                 dispatch(setUserImage(imageURL));
-                setToaster({
-                    open: true,
-                    message: `Image for chef ${userData!.displayName} updated successfully!`,
-                    type: "success",
-                    transition: "Slide",
-                    key: userData!.uid
-                });
+                showSnackbarSuccess(dispatch, "User image updated successfully!")
             }
             catch (error) {
                 console.error("Error while updating user image: ", error)
-                setToaster({
-                    open: true,
-                    message: (error as Error).message,
-                    type: "error",
-                    transition: "Slide",
-                    key: userData!.uid
-                });
+                showSnackbarError(dispatch, error);
             }
         }
     }
@@ -117,21 +103,6 @@ export const UserProfile = () => {
                     <UserActivityBox />
                 </Box>
             )}
-            <Snackbar 
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                autoHideDuration={4000}
-                open={toaster.open}
-                key={toaster.key}
-                onClose={handleCloseToaster}
-                sx={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}
-            >
-                <Alert severity={toaster.type} variant="filled" sx={{display:"flex", flexDirection:"row", alignItems: "center"}}>
-                    <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Typography>{toaster.message}</Typography>
-                        <Close onClick={handleCloseToaster} sx={{ marginLeft: "2%", cursor: "pointer" }}/>
-                    </Box>
-                </Alert>
-            </Snackbar>
         </>
     );
 }

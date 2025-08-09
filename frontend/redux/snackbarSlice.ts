@@ -20,23 +20,30 @@ export const snackbarSlice = createSlice({
     name: 'snackbar',
     initialState,
     reducers: {
-        setOpen: (state, _) => {
+        setOpenSnackbar: (state) => {
             state.open = true;
         },
-        setClose: (state, _) => {
+        setCloseSnackbar: (state) => {
             state.open = false;
         },
-        setAutoHideDuration: (state, action) => {
+        setAutoHideDurationSnackbar: (state, action) => {
             state.autoHideDuration = action.payload;
         },
-        setMessage: (state, action) => {
+        setMessageSnackbar: (state, action) => {
             state.message = action.payload;
         },
-        setPosition: (state, action) => {
+        setPositionSnackbar: (state, action) => {
             state.position = action.payload;
         },
-        setSeverity: (state, action) => {
+        setSeveritySnackbar: (state, action) => {
             state.severity = action.payload;
+        },
+        setOpenSnackbarWithParameters: (state, action) => {
+            state.open = action.payload.open;
+            state.autoHideDuration = action.payload.autoHideDuration;
+            state.message = action.payload.message;
+            state.position = action.payload.position;
+            state.severity = action.payload.severity;
         }
     }
 });
@@ -50,7 +57,7 @@ export const getVariant = (state: RootState) => state.snackbar.variant;
 
 export const getEntireSnackbar = (state: RootState) => state.snackbar;
 
-export const { setOpen, setClose, setAutoHideDuration, setMessage, setPosition, setSeverity } = snackbarSlice.actions;
+export const { setOpenSnackbar, setCloseSnackbar, setAutoHideDurationSnackbar, setMessageSnackbar, setPositionSnackbar, setSeveritySnackbar, setOpenSnackbarWithParameters } = snackbarSlice.actions;
 
 
 export default snackbarSlice.reducer;
