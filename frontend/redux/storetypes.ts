@@ -9,9 +9,10 @@ export interface UserData extends UserInfo {
     totalViews: number;
     publishedRecipes: number;
     recipes: Array<Recipe>;
+    recipesLiked: Array<Recipe>;
 }
 
-export type ChefData = Omit<UserData, "emailVerified" | "phoneNumber" | "recipes"> ;
+export type ChefData = Omit<UserData, "emailVerified" | "phoneNumber"> ;
 
 export interface Recipe {
     id: string;
@@ -49,7 +50,7 @@ export interface RecipeOfTheDay extends Recipe {
 
 export interface RecipeState {
     loggedUser: UserInfo | null;
-    selectedUserData: UserData | null;
+    selectedUserData: ChefData | null;
     recipesDisplayed: Array<Recipe>;
     recipesPerPage: number;
     numberOfPages: number;

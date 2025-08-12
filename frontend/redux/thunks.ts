@@ -170,13 +170,15 @@ export const fetchSingleRecipe = createAsyncThunk('recipe/fetchSingleRecipe',
                     // const chefImageRef = ref(storage, updatedChefData.photoURL);
                     // const photoURL = await getDownloadURL(chefImageRef);
                     chefData = {
-                        uid: updatedChefData.id,
-                        displayName: updatedChefData.name,
+                        uid: updatedChefData.uid,
+                        displayName: updatedChefData.displayName,
                         email: updatedChefData.email,
-                        photoURL: '',
+                        photoURL: updatedChefData.photoURL,
                         likesReceived: updatedChefData.likesReceived,
                         totalViews: updatedChefData.totalViews,
-                        publishedRecipes: updatedChefData.publishedRecipes
+                        publishedRecipes: updatedChefData.publishedRecipes,
+                        recipes: updatedChefData.recipes,
+                        recipesLiked: updatedChefData.recipesLiked,
                     };
                 }
                 else throw new Error("Can't retrieve chef data for the recipe with id " + recipeId);
@@ -212,42 +214,23 @@ export const fetchSingleRecipe = createAsyncThunk('recipe/fetchSingleRecipe',
 export const fetchUserData = createAsyncThunk('recipe/fetchUserData',
     async (userId: string) => {
 
-        const userRef = collection(db, 'Chefs');
-        const userQuery = query(userRef, where("id", "==", userId));
-        const querySnapshot = await getDocs(userQuery);
+        const userRef = doc(db, 'Chefs', userId);
+        const userSnapshot = await getDoc(userRef);
 
-        let userName = '';
-
-        const userData = querySnapshot.docs.map((doc) => {
-            const userData = doc.data();
-            userName = userData.name;
+        if (userSnapshot.exists()) {
+            const userData = userSnapshot.data();
             return {
-                uid: userData.id,
-                displayName: userData.name,
+                uid: userData.uid,
+                displayName: userData.displayName,
                 email: userData.email,
                 emailVerified: true,
-                lastSignInTime: "N/A",
-                phoneNumber: "N/A",
                 photoURL: userData.photoURL,
                 likesReceived: userData.likesReceived,
                 totalViews: userData.totalViews,
-                publishedRecipes: userData.publishedRecipes
-            }
-        });
-
-        const recipeRef = collection(db, 'Recipes');
-        const recipeQuery = query(recipeRef, where("chef", "==", userName));
-        const queryRecipeSnapshot = await getDocs(recipeQuery);
-
-        const recipeData = queryRecipeSnapshot.docs.map((doc) => {
-            const recipeData = doc.data();
-            return {
-                id: recipeData.id,
-                title: recipeData.title,
-                imageURL: recipeData.imageURL
-            }
-        })
-
-        return { ...userData[0], recipes: recipeData }
+                publishedRecipes: userData.publishedRecipes,
+                recipes: userData.recipes,
+                recipesLiked: userData.recipesLiked
+            } as ChefData;
+        }
     }
 )

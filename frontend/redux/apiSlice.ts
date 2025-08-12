@@ -6,7 +6,7 @@ import {
 } from "firebase/firestore";
 import { auth, db, storage } from "../firebase/auth/firebase";
 import { capitalizeFirstLetterAfterSpace, createImageFileName } from "../utils/helpers";
-import { ChefData, Ingredient, IngredientSuggestion, Recipe, RecipeToSubmit } from "../redux/storetypes";
+import { ChefData, Ingredient, IngredientSuggestion, Recipe, RecipeToSubmit, UserData } from "../redux/storetypes";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 
@@ -25,12 +25,15 @@ export const firebaseApi = createApi({
           if (querySnapshot.empty) {
             await setDoc(doc(db, "Chefs", user.uid), {
               email: user.email,
-              id: user.uid,
+              uid: user.uid,
               likesReceived: 0,
-              name: user.displayName,
+              displayName: user.displayName,
+              photoURL: null,
               publishedRecipes: 0,
+              recipes: [],
+              recipesLiked: [],
               totalViews: 0
-            });
+            } as ChefData);
             return { data: true };
           }
           return { data: false };
@@ -52,14 +55,14 @@ export const firebaseApi = createApi({
             const chefData = querySnapshot.docs[0].data();
             return { 
               data: {
-                uid: chefData.id,
-                displayName: chefData.name,
+                uid: chefData.uid,
+                displayName: chefData.displayName,
                 email: chefData.email,
                 photoURL: chefData.photoURL,
                 likesReceived: chefData.likesReceived,
                 totalViews: chefData.totalViews,
                 publishedRecipes: chefData.publishedRecipes
-              } 
+              } as ChefData
             };
           }
           throw new Error("Chef not found");
@@ -67,7 +70,7 @@ export const firebaseApi = createApi({
           return { error };
         }
       },
-      providesTags: (result, error, chefId) => 
+      providesTags: (result, _, chefId) => 
         result ? [{ type: 'Chefs', id: chefId }] : []
     }),
 
