@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { RootState } from './store';
 import { RecipeState } from './storetypes';
 import { fetchLogout, fetchRecipeOfTheDay, fetchRecipesBatch, fetchSingleRecipe, fetchTotalNumberOfPagesInHome, fetchUserData } from './thunks';
 
@@ -106,13 +105,13 @@ export const recipeSlice = createSlice({
     }
 })
 
-export const getLoggedUser = (state: RootState) => state.recipe.loggedUser;
-export const getUserData = (state: RootState) => state.recipe.selectedUserData;
-export const getRecipeOfTheDay = (state: RootState) => state.recipe.recipeOfTheDay;
-export const getRecipesDisplayed = (state: RootState) => state.recipe.recipesDisplayed;
-export const getNumberOfRecipesToDisplayInHome = (state: RootState) => state.recipe.recipesPerPage;
-export const getNumberOfPagesInHome = (state: RootState) => state.recipe.numberOfPages;
-export const getCurrentRecipe = (state: RootState) => state.recipe.currentRecipe;
+export const getLoggedUser = (state: any) => state.recipe.loggedUser;
+export const getUserData = (state: any) => state.recipe.selectedUserData;
+export const getRecipeOfTheDay = (state: any) => state.recipe.recipeOfTheDay;
+export const getRecipesDisplayed = (state: any) => state.recipe.recipesDisplayed;
+export const getNumberOfRecipesToDisplayInHome = (state: any) => state.recipe.recipesPerPage;
+export const getNumberOfPagesInHome = (state: any) => state.recipe.numberOfPages;
+export const getCurrentRecipe = (state: any) => state.recipe.currentRecipe;
 
 export const { setUser, setUserImage, setRecipeLikedBy, setRecipeLikes } = recipeSlice.actions;
 

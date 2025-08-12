@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { fetchSingleRecipe } from "../redux/thunks";
+import { fetchSingleRecipe, fetchTotalNumberOfPagesInHome } from "../redux/thunks";
 import { getCurrentRecipe } from "../redux/recipeSlice";
 import { RecipeAppBar } from "../components/RecipeAppBar";
 import { Accordion, AccordionDetails, AccordionSummary, Backdrop, Box, Button, CircularProgress, Fade, Grid, LinearProgress, List, Modal, Typography } from "@mui/material";
@@ -11,6 +11,8 @@ import parse from 'html-react-parser';
 import { ExpandMoreRounded, OpenInFull } from "@mui/icons-material";
 import { colors } from "../utils/theme";
 import { ChefTitle } from "../components/ChefTitle";
+import { showSnackbarError } from "../utils/helpers";
+import { Toaster } from "../components/Toaster";
 
 
 export const RecipeSelected = () => {
@@ -32,8 +34,20 @@ export const RecipeSelected = () => {
 
 
     useEffect(() => {
-        if (recipeId !== undefined)
-            dispatch(fetchSingleRecipe(recipeId));
+        const fetchSingleRecipeFunction = async () => {
+            if (recipeId === undefined) {
+                showSnackbarError(dispatch, "Invalid recipe ID provided.");
+                return;
+            }
+            try {
+                await dispatch(fetchSingleRecipe(recipeId)).unwrap();
+                await dispatch(fetchTotalNumberOfPagesInHome()).unwrap();
+            } catch (error) {
+                showSnackbarError(dispatch, error);
+            }
+        };
+        fetchSingleRecipeFunction();
+
     }, [dispatch, recipeId]);
 
 
@@ -49,6 +63,7 @@ export const RecipeSelected = () => {
     return (
         <Box display="flex" flexDirection="column" height="100vh">
             <RecipeAppBar />
+            <Toaster />
             <Grid container spacing={0} width="100%" height="calc(100% - 64px)" direction="row" flexWrap="nowrap" justifyContent="center" alignItems="center" margin="0px" paddingLeft="15px">
                 <Grid item width="30%" height="100%" paddingTop="10px" paddingBottom="7px">
                     <Box display="flex" flexDirection="column" justifyContent="flex-start" height="100%">
@@ -63,7 +78,7 @@ export const RecipeSelected = () => {
                             {recipeData ? (
                                 <List>
                                     {
-                                        recipeData.ingredients.map((ingredient) => {
+                                        recipeData.ingredients.map((ingredient: string) => {
                                             return (
                                                 <Accordion key={ingredient}>
                                                     <AccordionSummary expandIcon={<ExpandMoreRounded />}>

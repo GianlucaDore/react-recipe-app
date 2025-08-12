@@ -2,19 +2,19 @@ import { Dispatch, Fragment, useCallback, useEffect, useState } from "react";
 import { usePublishIngredientMutation, useGetIngredientSuggestionsQuery } from "../redux/apiSlice";
 import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, Button, Modal, TextField, Typography } from "@mui/material";
 import { Add, Close, ExpandMore, Publish } from "@mui/icons-material";
-import { RecipeCreatedAction, ToasterData } from "../utils/interfaces";
+import { RecipeCreatedAction } from "../utils/interfaces";
 import { withIngredients } from "../utils/hocs";
+import { useAppDispatch } from "../redux/hooks";
+import { showSnackbarError, showSnackbarSuccess } from "../utils/helpers";
 
 interface IngredientsSelectorProps {
-    setToaster: React.Dispatch<React.SetStateAction<ToasterData>>;
     ingredients: Array<string>;
     dispatcher: Dispatch<RecipeCreatedAction>;
 }
 
 const IngredientsSelector = (props: IngredientsSelectorProps) => {
-    const { setToaster, ingredients, dispatcher } = props;
+    const { ingredients, dispatcher } = props;
 
-    // const [ingredientList, setIngredientList] = useState<Array<string>>([]);
     const [expandedAccordion, setExpandedAccordion] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
     const [ingredientSuggestions, setIngredientSuggestions] = useState<Array<string>>([]);
@@ -24,9 +24,11 @@ const IngredientsSelector = (props: IngredientsSelectorProps) => {
     const { data: suggestions } = useGetIngredientSuggestionsQuery(searchTerm);
     const [publishIngredient] = usePublishIngredientMutation();
 
+    const dispatch = useAppDispatch();
+
     const getIngredientSuggestions = useCallback(() => {
         if (suggestions)
-            setIngredientSuggestions(() => Array.from(suggestions.map(s => s.name)) as Array<string>);
+            setIngredientSuggestions(() => Array.from(suggestions.map(s => s.name)));
         else
             setIngredientSuggestions([]);
     }, [searchTerm]);
@@ -61,23 +63,14 @@ const IngredientsSelector = (props: IngredientsSelectorProps) => {
     const handlePublishIngredient = async () => {
         try {
             const retValue = await publishIngredient(ingredientNameInModal);
-            if (retValue) setToaster({
-                open: true,
-                message: `New ingredient "${ingredientNameInModal}" published successfully!`,
-                type: "success",
-                transition: "Slide",
-                key: ingredientNameInModal
-            });
+            if (retValue) {
+                const message: string = `New ingredient "${ingredientNameInModal}" published successfully!`;
+                showSnackbarSuccess(dispatch, message);
+            }
         }
         catch (error) {
             console.error("Error while publishing new ingredient in the database: ", error);
-            setToaster({
-                open: true,
-                message: (error as Error).message,
-                type: "error",
-                transition: "Slide",
-                key: ingredientNameInModal
-            });
+            showSnackbarError(dispatch, error);
         }
         handleModal(false);
     }
