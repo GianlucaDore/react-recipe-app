@@ -5,7 +5,7 @@ import { SnackbarState } from './storetypes';
 
 const initialState: SnackbarState = {
     open: false,
-    autoHideDuration: 5000,
+    autoHideDuration: 3000,
     message: "",
     position: {
         vertical: 'top',

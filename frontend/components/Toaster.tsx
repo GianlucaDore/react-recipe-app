@@ -19,6 +19,7 @@ export const Toaster = () =>{
         <Snackbar
             open={snackbarState.open}
             autoHideDuration={snackbarState.autoHideDuration}
+            anchorOrigin={{ vertical: snackbarState.position.vertical, horizontal: snackbarState.position.horizontal }}
             onClose={handleCloseSnackbar}
         >
             <Alert

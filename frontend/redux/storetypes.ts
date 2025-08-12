@@ -62,7 +62,7 @@ export interface SnackbarState {
     autoHideDuration: number,
     message: string,
     position: {
-        vertical: 'top' | 'bottom' | 'center',
+        vertical: 'top' | 'bottom',
         horizontal: 'left' | 'right' | 'center'
     },
     severity: "success" | "info" | "warning" | "error",

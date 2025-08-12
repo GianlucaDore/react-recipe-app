@@ -12,6 +12,7 @@ import { RecipeImageMemoized } from "../components/RecipeImage";
 import { Difficulty, RecipeToSubmit, UserInfo } from "../redux/storetypes";
 import { RecipeNamerMemoized } from "../components/RecipeNamer";
 import { showSnackbarError, showSnackbarSuccess } from "../utils/helpers";
+import { Toaster } from "../components/Toaster";
 
 
 function recipeCreatedReducer(state: RecipeCreatedState, action: RecipeCreatedAction): RecipeCreatedState {
@@ -102,6 +103,7 @@ export const RecipeCreator = () => {
     return (
         <Box display="flex" flexDirection="column" minHeight="100vh">
             <RecipeAppBar />
+            <Toaster />
             <RecipeCreatedContext.Provider value={recipeCreated}>
                 <Box display="flex" flexDirection="row" width="100%" justifyContent="space-evenly">
                     <Box flexDirection="column" height="100%" width="50%">

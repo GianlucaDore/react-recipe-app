@@ -4,6 +4,8 @@ import { Dispatch, useCallback, useEffect, useRef, useState } from "react"
 import { RecipeCreatedAction } from "../utils/interfaces"
 import { withImage } from "../utils/hocs"
 import { retrieveImageFromURL } from "../utils/DEPRECATED_apicalls"
+import { showSnackbarError, showSnackbarSuccess } from "../utils/helpers"
+import { useAppDispatch } from "../redux/hooks"
 
 interface RecipeImageProps {
     dispatcher: Dispatch<RecipeCreatedAction>;
@@ -14,6 +16,8 @@ const RecipeImage = (props: RecipeImageProps) => {
     const { dispatcher, currentImageURL } = props;
 
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+    const dispatch = useAppDispatch();
 
     /* Ref to manually empty the image file input each time we remove the image. */
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -35,6 +39,7 @@ const RecipeImage = (props: RecipeImageProps) => {
         }
         catch (error) {
             console.error("Can't retrieve image from URL: ", currentImageURL);
+            showSnackbarError(dispatch, error);
         }
     }, [currentImageURL])
 
@@ -49,6 +54,10 @@ const RecipeImage = (props: RecipeImageProps) => {
             const localImageURL = URL.createObjectURL(event.target.files[0]);
             setSelectedImage(localImageURL);
             dispatcher({ type: "edit-image", payload: event.target.files[0]});
+            showSnackbarSuccess(dispatch, "New image uploaded successfully!");
+        }
+        else {
+            showSnackbarError(dispatch, "Failed to upload image. Please try again or use a different image.")
         }
     }
 
@@ -58,6 +67,7 @@ const RecipeImage = (props: RecipeImageProps) => {
         }
         setSelectedImage(null);
         dispatcher({ type: "edit-image", payload: '' });
+        showSnackbarSuccess(dispatch, "Image removed successfully!");
     }
 
     return (

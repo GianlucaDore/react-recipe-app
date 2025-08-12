@@ -12,6 +12,7 @@ import { ExpandMoreRounded, OpenInFull } from "@mui/icons-material";
 import { colors } from "../utils/theme";
 import { ChefTitle } from "../components/ChefTitle";
 import { showSnackbarError } from "../utils/helpers";
+import { Toaster } from "../components/Toaster";
 
 
 export const RecipeSelected = () => {
@@ -62,6 +63,7 @@ export const RecipeSelected = () => {
     return (
         <Box display="flex" flexDirection="column" height="100vh">
             <RecipeAppBar />
+            <Toaster />
             <Grid container spacing={0} width="100%" height="calc(100% - 64px)" direction="row" flexWrap="nowrap" justifyContent="center" alignItems="center" margin="0px" paddingLeft="15px">
                 <Grid item width="30%" height="100%" paddingTop="10px" paddingBottom="7px">
                     <Box display="flex" flexDirection="column" justifyContent="flex-start" height="100%">

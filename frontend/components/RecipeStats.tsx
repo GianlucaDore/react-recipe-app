@@ -9,6 +9,7 @@ import { colors } from "../utils/theme";
 import { ChefTitle, ChefTitleProps } from "./ChefTitle";
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { fetchLikedByBatch } from "../utils/DEPRECATED_apicalls";
+import { showSnackbarError } from "../utils/helpers";
 
 interface RecipeStatsProps {
     minutesNeeded: number;
@@ -60,6 +61,7 @@ export const RecipeStats = (props: RecipeStatsProps) => {
                 }
             } else {
                 console.error("User is not logged in.");
+                showSnackbarError(dispatch, "No user is currently logged in.")
             }
         }
     };

@@ -11,6 +11,7 @@ import { AddAPhoto, Edit } from "@mui/icons-material";
 import { updateUserImage } from "../utils/DEPRECATED_apicalls";
 import { UserActivityBox } from "../components/UserActivityBox";
 import { showSnackbarError, showSnackbarSuccess } from "../utils/helpers";
+import { Toaster } from "../components/Toaster";
 
 export const UserProfile = () => {
 
@@ -56,6 +57,7 @@ export const UserProfile = () => {
     return (
         <>
             <RecipeAppBar />
+            <Toaster />
             {userData && (
                 <Box width="100%" marginTop="30px" display="flex" flexDirection="column" justifyContent="center" rowGap="50px">
                     <Box display="flex" flexDirection="column" alignItems="center">
