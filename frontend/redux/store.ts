@@ -4,6 +4,7 @@ import snackbarReducer from './snackbarSlice';
 import storage from 'redux-persist/lib/storage';
 import persistReducer from 'redux-persist/es/persistReducer';
 import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
+import { firebaseApi } from './apiSlice'
 
 const persistConfig = {
     key: "root",
@@ -16,14 +17,17 @@ const persistedRecipeReducer = persistReducer(persistConfig, recipeReducer);
 export const store = configureStore({
     reducer: {
         recipe: persistedRecipeReducer,
-        snackbar: snackbarReducer
+        snackbar: snackbarReducer,
+        [firebaseApi.reducerPath]: firebaseApi.reducer
     },
     middleware: (getDefaultMiddleware) => 
         getDefaultMiddleware({
             serializableCheck: {
                 ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
             }
-        })
+        }).concat(
+            firebaseApi.middleware
+        )
 });
 
 export type RootState = ReturnType<typeof store.getState>
