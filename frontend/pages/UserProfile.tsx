@@ -1,17 +1,20 @@
 import { Avatar, Badge, Box, Button, IconButton, Typography } from "@mui/material"
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
-import { getUserData, setUserImage } from "../redux/recipeSlice";
+import { getLoggedUser, getUserData, setUserImage } from "../redux/recipeSlice";
 import { useEffect } from "react";
 import { useParams } from "react-router";
 import { fetchUserData } from "../redux/thunks";
 import { RecipeAppBar } from "../components/RecipeAppBar";
 import { UserStats } from "../components/UserStats";
-import defaultChef from '../assets/default_chef.jpg';
 import { AddAPhoto, Edit } from "@mui/icons-material";
 import { updateUserImage } from "../utils/DEPRECATED_apicalls";
 import { UserActivityBox } from "../components/UserActivityBox";
 import { showSnackbarError, showSnackbarSuccess } from "../utils/helpers";
 import { Toaster } from "../components/Toaster";
+import { ChefData, UserInfo } from "../redux/storetypes";
+
+import defaultChef from '../assets/default_chef.jpg';
+
 
 export const UserProfile = () => {
 
@@ -19,8 +22,9 @@ export const UserProfile = () => {
 
     const dispatch = useAppDispatch();
 
-    const userData = useAppSelector(getUserData);
+    const userData: ChefData | null  = useAppSelector(getUserData);
 
+    const loggedUser: UserInfo | null = useAppSelector(getLoggedUser);
 
     useEffect(() => {
         const fetchUserDataFunction = async () => {
@@ -41,18 +45,30 @@ export const UserProfile = () => {
 
     const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
-            try {
-                const imageURL = await updateUserImage(userData!.displayName, userData!.uid, event.target.files[0]);
-                dispatch(setUserImage(imageURL));
-                showSnackbarSuccess(dispatch, "User image updated successfully!")
+            if (userData) {
+                try {
+                    const imageURL = await updateUserImage(userData.displayName!, userData.uid, event.target.files[0]);
+                    dispatch(setUserImage(imageURL));
+                    showSnackbarSuccess(dispatch, "User image updated successfully!")
+                }
+                catch (error) {
+                    console.error("Error while updating user image: ", error)
+                    showSnackbarError(dispatch, error);
+                }
             }
-            catch (error) {
-                console.error("Error while updating user image: ", error)
-                showSnackbarError(dispatch, error);
+            else {
+                console.error("There was an error fetching the requested user.")
+                showSnackbarError(dispatch, "There was an error fetching the requested user")
             }
+        }
+        else {
+            console.error("New image to be uploaded was not provided or it's unsupported.")
+            showSnackbarError(dispatch, "New image was not provided or it's unsupported")
         }
     }
 
+
+    const isAddOrChangeImageBadgeVisible = !!loggedUser && userData?.uid === loggedUser.uid;
 
     return (
         <>
@@ -61,22 +77,11 @@ export const UserProfile = () => {
             {userData && (
                 <Box width="100%" marginTop="30px" display="flex" flexDirection="column" justifyContent="center" rowGap="50px">
                     <Box display="flex" flexDirection="column" alignItems="center">
-                        <Badge overlap="circular" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                        <Badge invisible={!isAddOrChangeImageBadgeVisible} overlap="circular" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                             badgeContent={userData.photoURL ? 
-                                <Button sx={{ padding: 0 }}>
+                                (<Button sx={{ padding: 0 }}>
                                     <IconButton aria-label="Upload picture..." component="label" sx={{ color: "white", padding: 0 }}>
-                                    <Edit />
-                                    <input 
-                                        type="file"
-                                        accept="image/*"
-                                        hidden
-                                        onChange={handleImageChange}
-                                    />
-                                </IconButton>
-                                </Button>
-                                
-                                :   <IconButton color="warning" aria-label="Upload picture..." component="label">
-                                        <AddAPhoto />
+                                        <Edit />
                                         <input 
                                             type="file"
                                             accept="image/*"
@@ -84,6 +89,17 @@ export const UserProfile = () => {
                                             onChange={handleImageChange}
                                         />
                                     </IconButton>
+                                </Button>)
+                                :   
+                                (<IconButton color="warning" aria-label="Upload picture..." component="label">
+                                    <AddAPhoto />
+                                    <input 
+                                        type="file"
+                                        accept="image/*"
+                                        hidden
+                                        onChange={handleImageChange}
+                                    />
+                                </IconButton>)
                             }
                         >
                             <Avatar 
