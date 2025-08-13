@@ -2,6 +2,27 @@ import { setMessageSnackbar, setOpenSnackbar, setSeveritySnackbar } from "../red
 import { AppDispatch } from "../redux/store";
 import { ChefData, Experience } from "../redux/storetypes";
 
+
+/**** BUSINESS LOGIC FUNCTIONS */
+/******************************/
+export function calculateChefExperience(chefData: ChefData | undefined) : Experience {
+    let experience : Experience = { level: "N/A" };
+    
+    if (chefData) {
+        const userScore = chefData.likesReceived * 10 + chefData.totalViews + chefData.publishedRecipes * 5; 
+
+        if (userScore > 1000) experience = { level: "Master" };
+        if (userScore <= 1000 && userScore > 750) experience = { level: "Experienced" };
+        if (userScore <= 750 && userScore > 250) experience = { level: "Practicing" };
+        if (userScore <= 250) experience = { level: "Unexperienced" };
+    }
+
+    return experience;
+}
+
+
+/**** STRING MANIPULATING FUNCTIONS ****/
+/**************************************/
 export function capitalizeFirstLetterAfterSpace(string: string) : string {
     const pattern = /\b\w+\b/g; 
     const result = string.replace(pattern, function(word){
@@ -24,21 +45,6 @@ export function createImageFileName(title: string, extension: string) : string |
     }
     else 
         return false;
-}
-
-export function calculateChefExperience(chefData: ChefData | undefined) : Experience {
-    let experience : Experience = { level: "N/A" };
-    
-    if (chefData) {
-        const userScore = chefData.likesReceived * 10 + chefData.totalViews + chefData.publishedRecipes * 5; 
-
-        if (userScore > 1000) experience = { level: "Master" };
-        if (userScore <= 1000 && userScore > 750) experience = { level: "Experienced" };
-        if (userScore <= 750 && userScore > 250) experience = { level: "Practicing" };
-        if (userScore <= 250) experience = { level: "Unexperienced" };
-    }
-
-    return experience;
 }
 
 export function getInitialsForChef(chefName: string | null | undefined) : string {
@@ -75,6 +81,9 @@ export function getAlphabeticalShorthandForNumber(value: number | undefined): st
     }
 }
 
+
+/****** SNACKBAR HELPER FUNCTIONS  ******/
+/***************************************/
 export function getErrorMessage(error: unknown): string {
     if (error instanceof Error) {
         return error.message;

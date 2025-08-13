@@ -48,14 +48,14 @@ export const snackbarSlice = createSlice({
     }
 });
 
-export const getIsOpen = (state: RootState) => state.snackbar.open;
-export const getAutoHideDuration = (state: RootState) => state.snackbar.autoHideDuration;
-export const getMessage = (state: RootState) => state.snackbar.autoHideDuration;
-export const getPosition = (state: RootState) => state.snackbar.position;
-export const getSeverity = (state: RootState) => state.snackbar.severity;
-export const getVariant = (state: RootState) => state.snackbar.variant;
 
-export const getEntireSnackbar = (state: RootState) => state.snackbar;
+export const getIsOpen = (state: RootState): typeof state.snackbar.open => state.snackbar.open;
+export const getAutoHideDuration = (state: RootState): typeof state.snackbar.autoHideDuration => state.snackbar.autoHideDuration;
+export const getMessage = (state: RootState): typeof state.snackbar.autoHideDuration => state.snackbar.autoHideDuration;
+export const getPosition = (state: RootState): typeof state.snackbar.position => state.snackbar.position;
+export const getSeverity = (state: RootState): typeof state.snackbar.severity => state.snackbar.severity;
+export const getVariant = (state: RootState): typeof state.snackbar.variant => state.snackbar.variant;
+export const getEntireSnackbar = (state: RootState): typeof state.snackbar => state.snackbar;
 
 export const { setOpenSnackbar, setCloseSnackbar, setAutoHideDurationSnackbar, setMessageSnackbar, setPositionSnackbar, setSeveritySnackbar, setOpenSnackbarWithParameters } = snackbarSlice.actions;
 

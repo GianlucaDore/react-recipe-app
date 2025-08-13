@@ -232,5 +232,6 @@ export const fetchUserData = createAsyncThunk('recipe/fetchUserData',
                 recipesLiked: userData.recipesLiked
             } as ChefData;
         }
+        else return null;
     }
 )

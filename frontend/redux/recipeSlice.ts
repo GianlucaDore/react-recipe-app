@@ -1,6 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { RecipeState } from './storetypes';
+
 import { fetchLogout, fetchRecipeOfTheDay, fetchRecipesBatch, fetchSingleRecipe, fetchTotalNumberOfPagesInHome, fetchUserData } from './thunks';
+import { RecipeState } from './storetypes';
+import { RootState } from './store';
 
 
 const initialState: RecipeState = {
@@ -105,13 +107,14 @@ export const recipeSlice = createSlice({
     }
 })
 
-export const getLoggedUser = (state: any) => state.recipe.loggedUser;
-export const getUserData = (state: any) => state.recipe.selectedUserData;
-export const getRecipeOfTheDay = (state: any) => state.recipe.recipeOfTheDay;
-export const getRecipesDisplayed = (state: any) => state.recipe.recipesDisplayed;
-export const getNumberOfRecipesToDisplayInHome = (state: any) => state.recipe.recipesPerPage;
-export const getNumberOfPagesInHome = (state: any) => state.recipe.numberOfPages;
-export const getCurrentRecipe = (state: any) => state.recipe.currentRecipe;
+
+export const getLoggedUser = (state: RootState): typeof state.recipe.loggedUser => state.recipe.loggedUser;
+export const getUserData = (state: RootState): typeof state.recipe.selectedUserData => state.recipe.selectedUserData;
+export const getRecipeOfTheDay = (state: RootState): typeof state.recipe.recipeOfTheDay => state.recipe.recipeOfTheDay;
+export const getRecipesDisplayed = (state: RootState): typeof state.recipe.recipesDisplayed => state.recipe.recipesDisplayed;
+export const getNumberOfRecipesToDisplayInHome = (state: RootState): typeof state.recipe.recipesPerPage => state.recipe.recipesPerPage;
+export const getNumberOfPagesInHome = (state: RootState): typeof state.recipe.numberOfPages => state.recipe.numberOfPages;
+export const getCurrentRecipe = (state: RootState): typeof state.recipe.currentRecipe => state.recipe.currentRecipe;
 
 export const { setUser, setUserImage, setRecipeLikedBy, setRecipeLikes } = recipeSlice.actions;
 
