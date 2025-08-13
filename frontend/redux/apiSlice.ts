@@ -1,13 +1,14 @@
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
 import { getAuth, User } from "firebase/auth";
+import { auth, db, storage } from "../firebase/auth/firebase";
 import {
   addDoc, arrayRemove, arrayUnion, collection, doc, endAt, getDoc, getDocs, increment,
   limit, orderBy, query, setDoc, startAfter, startAt, updateDoc, where
 } from "firebase/firestore";
-import { auth, db, storage } from "../firebase/auth/firebase";
-import { capitalizeFirstLetterAfterSpace, createImageFileName } from "../utils/helpers";
-import { ChefData, Ingredient, IngredientSuggestion, Recipe, RecipeToSubmit, UserData } from "../redux/storetypes";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { capitalizeFirstLetterAfterSpace, createImageFileName } from "../utils/helpers";
+
+import { ChefData, Ingredient, IngredientSuggestion, Recipe, RecipeToSubmit } from "../redux/storetypes";
 
 
 export const firebaseApi = createApi({
@@ -161,7 +162,7 @@ export const firebaseApi = createApi({
                 : [];
             
             const recipeItems = await Promise.all(
-              recipeIdsArray.map(rid => retrieveRecipeItemDetails(rid))
+              recipeIdsArray.map((rid: string) => retrieveRecipeItemDetails(rid))
             );
             return { data: recipeItems.filter(item => item !== null) as Recipe[] };
           }
