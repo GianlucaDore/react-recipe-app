@@ -3,7 +3,7 @@ import { getAuth, User } from "firebase/auth";
 import { auth, db, storage } from "../firebase/auth/firebase";
 import {
   addDoc, arrayRemove, arrayUnion, collection, doc, documentId, endAt, getDoc, getDocs, increment,
-  limit, orderBy, query, setDoc, startAfter, startAt, updateDoc, where
+  orderBy, query, setDoc, startAt, updateDoc, where
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { capitalizeFirstLetterAfterSpace, createImageFileName } from "../utils/helpers";
@@ -285,7 +285,7 @@ export const firebaseApi = createApi({
       }
     }),
 
-    getSelectedUserRecipeArrays: builder.query<Pick<ChefData, "recipes" & "recipesLiked">, { userId: string; }>({
+    getSelectedUserRecipeArrays: builder.query<{recipes: Array<string>, recipesLiked: Array<string>}, { userId: string }>({
       async queryFn({ userId }) {
         try {
           const userRef = doc(db, "Chefs", userId);
@@ -293,7 +293,7 @@ export const firebaseApi = createApi({
 
           if (userSnapshot.exists()) {
             const userData = userSnapshot.data();
-            const recipeArrays: Pick<ChefData, "recipes" & "recipesLiked"> = {
+            const recipeArrays: {recipes: Array<string>, recipesLiked: Array<string>} = {
               recipes: userData.recipes,
               recipesLiked: userData.recipesLiked
             };
@@ -310,6 +310,10 @@ export const firebaseApi = createApi({
     getSelectedUserBatch: builder.query<Array<Recipe>, { batchIds: Array<string> }>({
       async queryFn({ batchIds }) {
         try {
+          if (!batchIds || batchIds.length === 0) {
+            return { data: [] as Recipe[] };
+          }
+
           const recipesQuery = query(collection(db, "Recipes"), where(documentId(), "in", batchIds))
           const recipesSnapshot = await getDocs(recipesQuery);
           
@@ -322,6 +326,9 @@ export const firebaseApi = createApi({
               imageURL: data.imageURL,
             });
           });
+
+          const orderIndex = new Map(batchIds.map((id, i) => [id, i]));
+          recipes.sort((a, b) => (orderIndex.get(a.id)! - orderIndex.get(b.id)!));
           
           return { data: recipes };
         }
@@ -330,7 +337,8 @@ export const firebaseApi = createApi({
         }
       }
     })
-  })
+  }),
+  keepUnusedDataFor: 60
 });
 
 
@@ -342,5 +350,7 @@ export const {
   useGetRecipeItemsQuery,
   usePublishRecipeMutation,
   useAddLikeMutation,
-  useRemoveLikeMutation
+  useRemoveLikeMutation,
+  useGetSelectedUserRecipeArraysQuery,
+  useGetSelectedUserBatchQuery
 } = firebaseApi;
