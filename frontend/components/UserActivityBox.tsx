@@ -1,26 +1,45 @@
-import { Box, Button, CircularProgress, Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
-import { RecipeItem } from './RecipesList'
-import { useAppSelector } from '../redux/hooks'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useParams } from 'react-router'
+
 import { getLoggedUser, getUserData } from '../redux/recipeSlice'
-import { useGetRecipeItemsQuery } from '../redux/apiSlice'
-import { Recipe } from '../redux/storetypes'
-import { colors } from '../utils/theme'
-import { PostAdd } from '@mui/icons-material'
+import { useGetRecipeItemsQuery, useGetSelectedUserBatchQuery, useGetSelectedUserRecipeArraysQuery } from '../redux/apiSlice'
 import { skipToken } from '@reduxjs/toolkit/query'
+import { useAppSelector } from '../redux/hooks'
+import { Recipe } from '../redux/storetypes'
+
+import { RecipeItem } from './RecipesList'
+
+import { Box, Button, CircularProgress, Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
+import { PostAdd } from '@mui/icons-material'
+
+import { colors } from '../utils/theme'
+
 
 export const UserActivityBox = () => {
-    const [tabMode, setTabMode] = useState<string>('Recipes');
+    const [tabMode, setTabMode] = useState<'Recipes' | 'Likes'>('Recipes');
     const [recipeItems, setRecipeItems] = useState<Recipe[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const [page, setPage] = useState<number>(0);
+
+    const pageSize = 10;
+
+    const { userId } = useParams();
+    
+    const { data: dataArrays, error: errorArrays, isLoading: isLoadingArrays } = useGetSelectedUserRecipeArraysQuery(userId ? { userId } : skipToken);
+    
+    const batchIds = useMemo(() => {
+        if (!dataArrays) return [];
+        if (tabMode === 'Recipes') return dataArrays.recipes.slice(page*pageSize, page*pageSize+pageSize);
+        else return dataArrays.recipesLiked.slice(page*pageSize, page*pageSize+pageSize);
+    }, [dataArrays, tabMode, page]);
+    
+    const { data: dataBatch, error: errorbatch, isLoading: isLoadingBatch } = useGetSelectedUserBatchQuery(batchIds.length ? { batchIds } : skipToken);
 
     const navigate = useNavigate();
 
     const userData = useAppSelector(getUserData);
     const loggedUser = useAppSelector(getLoggedUser);
 
-    // RTK Query hook: chiamata diretta
     const { data: recipeItemsFetched, isLoading } = useGetRecipeItemsQuery(
         userData?.uid ? { type: tabMode, chefId: userData.uid } : skipToken
     );
@@ -35,7 +54,7 @@ export const UserActivityBox = () => {
         navigate('/add-recipe')
     }
 
-    const handleTabModeChange = (_: React.MouseEvent<HTMLElement>, eventValue: string | null) => {
+    const handleTabModeChange = (_: React.MouseEvent<HTMLElement>, eventValue: 'Recipes' | 'Likes' | null) => {
         if (eventValue) {
             setTabMode(eventValue);
         }
@@ -85,7 +104,7 @@ export const UserActivityBox = () => {
                 </ToggleButton>
             </ToggleButtonGroup>
             <Box
-                display="flex" flexDirection="row" flexWrap="wrap" width="100%" minHeight="200px"
+                display="flex" flexDirection="row" flexWrap="wrap" width="100%" minHeight="234px"
                 padding="15px"
                 border="2px solid #4e342e"
                 borderRadius="15px"
