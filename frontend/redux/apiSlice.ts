@@ -2,13 +2,13 @@ import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
 import { getAuth, User } from "firebase/auth";
 import { auth, db, storage } from "../firebase/auth/firebase";
 import {
-  addDoc, arrayRemove, arrayUnion, collection, doc, endAt, getDoc, getDocs, increment,
+  addDoc, arrayRemove, arrayUnion, collection, doc, documentId, endAt, getDoc, getDocs, increment,
   limit, orderBy, query, setDoc, startAfter, startAt, updateDoc, where
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { capitalizeFirstLetterAfterSpace, createImageFileName } from "../utils/helpers";
 
-import { ChefData, Ingredient, IngredientSuggestion, Recipe, RecipeToSubmit } from "../redux/storetypes";
+import { ChefData, Ingredient, IngredientSuggestion, Recipe, RecipeToSubmit } from "./storetypes";
 
 
 export const firebaseApi = createApi({
@@ -254,6 +254,81 @@ export const firebaseApi = createApi({
         }
       },
       invalidatesTags: ['Recipes', 'Chefs']
+    }),
+
+    getSelectedUser: builder.query<ChefData, { userId: string; }>({
+      async queryFn({ userId }) {
+        try {
+          const userRef = doc(db, "Chefs", userId);
+          const userSnapshot = await getDoc(userRef);
+
+          if (userSnapshot.exists()) {
+            const userData = userSnapshot.data();
+            const chefData: ChefData = {
+              uid: userData.uid,
+              displayName: userData.displayName,
+              email: userData.email,
+              photoURL: userData.photoURL,
+              likesReceived: userData.likesReceived,
+              totalViews: userData.totalViews,
+              publishedRecipes: userData.publishedRecipes,
+              recipes: userData.recipes,
+              recipesLiked: userData.recipesLiked
+            };
+            return { data: chefData }; 
+          }
+          else return { error: new Error("User requested does not exist") };
+        }
+        catch (error) {
+          return { error };
+        }
+      }
+    }),
+
+    getSelectedUserRecipeArrays: builder.query<Pick<ChefData, "recipes" & "recipesLiked">, { userId: string; }>({
+      async queryFn({ userId }) {
+        try {
+          const userRef = doc(db, "Chefs", userId);
+          const userSnapshot = await getDoc(userRef);
+
+          if (userSnapshot.exists()) {
+            const userData = userSnapshot.data();
+            const recipeArrays: Pick<ChefData, "recipes" & "recipesLiked"> = {
+              recipes: userData.recipes,
+              recipesLiked: userData.recipesLiked
+            };
+            return { data: recipeArrays }; 
+          }
+          else return { error: new Error("User requested does not exist") };
+        }
+        catch (error) {
+          return { error };
+        }
+      }
+    }),
+
+    getSelectedUserBatch: builder.query<Array<Recipe>, { batchIds: Array<string> }>({
+      async queryFn({ batchIds }) {
+        try {
+          const recipesQuery = query(collection(db, "Recipes"), where(documentId(), "in", batchIds))
+          const recipesSnapshot = await getDocs(recipesQuery);
+          
+          const recipes: Array<Recipe> = [];
+          recipesSnapshot.forEach((doc) => {
+            const data = doc.data();
+            recipes.push({
+              id: doc.id,
+              title: data.title,
+              imageURL: data.imageURL,
+            });
+          });
+          
+          return { data: recipes };
+        }
+        catch (error) {
+          return { error };
+        }
+      }
     })
   })
 });
