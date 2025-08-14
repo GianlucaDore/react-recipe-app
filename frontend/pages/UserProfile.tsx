@@ -1,30 +1,34 @@
-import { Avatar, Badge, Box, Button, IconButton, Typography } from "@mui/material"
-import { useAppDispatch, useAppSelector } from "../redux/hooks"
-import { getLoggedUser, getUserData, setUserImage } from "../redux/recipeSlice";
 import { useEffect } from "react";
 import { useParams } from "react-router";
+
+import { Avatar, Badge, Box, Button, IconButton, Typography } from "@mui/material"
+import { AddAPhoto, Edit } from "@mui/icons-material";
+
+import { useAppDispatch, useAppSelector } from "../redux/hooks"
+import { getLoggedUser, getUserData, setUserImage } from "../redux/recipeSlice";
 import { fetchUserData } from "../redux/thunks";
+
+import { updateUserImage } from "../utils/DEPRECATED_apicalls";
+import { showSnackbarError, showSnackbarSuccess } from "../utils/helpers";
+
 import { RecipeAppBar } from "../components/RecipeAppBar";
 import { UserStats } from "../components/UserStats";
-import { AddAPhoto, Edit } from "@mui/icons-material";
-import { updateUserImage } from "../utils/DEPRECATED_apicalls";
 import { UserActivityBox } from "../components/UserActivityBox";
-import { showSnackbarError, showSnackbarSuccess } from "../utils/helpers";
 import { Toaster } from "../components/Toaster";
-import { ChefData, UserInfo } from "../redux/storetypes";
+
 
 import defaultChef from '../assets/default_chef.jpg';
 
 
 export const UserProfile = () => {
-
+    
     const { userId } = useParams();
 
     const dispatch = useAppDispatch();
 
-    const userData: ChefData | null  = useAppSelector(getUserData);
+    const userData = useAppSelector(getUserData);
 
-    const loggedUser: UserInfo | null = useAppSelector(getLoggedUser);
+    const loggedUser = useAppSelector(getLoggedUser);
 
     useEffect(() => {
         const fetchUserDataFunction = async () => {
@@ -75,7 +79,7 @@ export const UserProfile = () => {
             <RecipeAppBar />
             <Toaster />
             {userData && (
-                <Box width="100%" marginTop="30px" display="flex" flexDirection="column" justifyContent="center" rowGap="50px">
+                <Box width="100%" marginTop="30px" marginBottom="20px" display="flex" flexDirection="column" justifyContent="center" rowGap="50px">
                     <Box display="flex" flexDirection="column" alignItems="center">
                         <Badge invisible={!isAddOrChangeImageBadgeVisible} overlap="circular" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                             badgeContent={userData.photoURL ? 
