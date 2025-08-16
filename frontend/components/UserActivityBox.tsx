@@ -17,6 +17,7 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 
 
 export const UserActivityBox = () => {
+
     const [tabMode, setTabMode] = useState<'Recipes' | 'Likes'>('Recipes');
     const [recipeItems, setRecipeItems] = useState<Recipe[]>([]);
     const [page, setPage] = useState<number>(0);
@@ -85,15 +86,17 @@ export const UserActivityBox = () => {
             >
                 <ToggleButton
                     value="Recipes"
-                    selected={tabMode === 'Recipes'}
+                    selected={tabMode === 'Recipes' && !isLoadingArrays}
+                    disabled={isLoadingArrays}
                     sx={{
                         borderTopLeftRadius: '15px',
                         borderTopRightRadius: '15px',
                         borderBottomLeftRadius: '0',
                         backgroundColor:
-                            tabMode === 'Recipes' ? "#4E342E" + " !important" : 'inherit',
+                            tabMode === 'Recipes' && !isLoadingArrays
+                                ? "#4E342E" + " !important" : 'inherit',
                         color:
-                            tabMode === 'Recipes'
+                            tabMode === 'Recipes' && !isLoadingArrays
                                 ? 'white' + " !important" : 'inherit',
                     }}
                 >
@@ -101,15 +104,17 @@ export const UserActivityBox = () => {
                 </ToggleButton>
                 <ToggleButton
                     value="Likes"
-                    selected={tabMode === 'Likes'}
+                    selected={tabMode === 'Likes' && !isLoadingArrays}
+                    disabled={isLoadingArrays}
                     sx={{
                         borderTopLeftRadius: '15px',
                         borderTopRightRadius: '15px',
                         borderBottomRightRadius: '0',
                         backgroundColor:
-                            tabMode === 'Likes' ? colors.likePrimary + " !important" : 'inherit',
+                            tabMode === 'Likes' && !isLoadingArrays
+                                ? colors.likePrimary + " !important" : 'inherit',
                         color:
-                            tabMode === 'Likes'
+                            tabMode === 'Likes' && !isLoadingArrays
                                 ? 'white' + " !important": 'inherit',
                     }}
                 >
