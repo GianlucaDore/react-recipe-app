@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams } from "react-router";
 
 import { Avatar, Badge, Box, Button, IconButton, Skeleton, Typography } from "@mui/material"
@@ -20,6 +21,8 @@ import { skipToken } from "@reduxjs/toolkit/query";
 
 
 export const UserProfile = () => {
+
+    const [localUserImage, setLocalUserImage] = useState<string | null>(null);
     
     const { userId } = useParams();
 
@@ -35,7 +38,10 @@ export const UserProfile = () => {
         if (event.target.files && userId && loggedUser) {
             const file = event.target.files[0];
             if (file && file.size <= 10 * 1024 * 1024 && file.type.match(/image\/(jpg|jpeg|png)/)) {
-                try {
+                try {      
+                    const localImageUrl = URL.createObjectURL(file);
+                    setLocalUserImage(localImageUrl);
+
                     const result = await setSelectedUserImage({
                         userId: loggedUser.uid,          
                         userName: loggedUser.displayName ? loggedUser.displayName : "null", 
@@ -58,7 +64,9 @@ export const UserProfile = () => {
     };
 
 
-    const isAddOrChangeImageBadgeVisible = !!loggedUser && userData?.uid === loggedUser.uid;
+    const isAddOrChangeImageBadgeVisible: boolean = !!loggedUser && userData?.uid === loggedUser.uid;
+    const srcUserImage: string = localUserImage ?? userData?.photoURL ?? defaultChef;
+
 
     return (
         <>
@@ -97,7 +105,7 @@ export const UserProfile = () => {
                             }
                         >
                             <Avatar 
-                                src={(userData.photoURL) ? userData.photoURL : defaultChef} 
+                                src={srcUserImage} 
                                 alt={(userData.displayName) ? userData.displayName : "Generic chef"}
                                 sx={{ width: 120, height: 120 }}
                             />
