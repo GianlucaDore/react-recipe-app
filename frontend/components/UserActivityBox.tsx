@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 
-import { getLoggedUser, getUserData } from '../redux/recipeSlice'
-import { useGetRecipeItemsQuery, useGetSelectedUserBatchQuery, useGetSelectedUserRecipeArraysQuery } from '../redux/apiSlice'
+import { getLoggedUser } from '../redux/recipeSlice'
+import { useGetSelectedUserBatchQuery, useGetSelectedUserRecipeArraysQuery } from '../redux/apiSlice'
 import { skipToken } from '@reduxjs/toolkit/query'
-import { useAppSelector } from '../redux/hooks'
+import { useAppDispatch, useAppSelector } from '../redux/hooks'
 import { Recipe } from '../redux/storetypes'
 
 import { RecipeItem } from './RecipesList'
@@ -13,12 +13,12 @@ import { Box, Button, CircularProgress, Grid, ToggleButton, ToggleButtonGroup, T
 import { PostAdd } from '@mui/icons-material'
 
 import { colors } from '../utils/theme'
+import InfiniteScroll from 'react-infinite-scroll-component'
 
 
 export const UserActivityBox = () => {
     const [tabMode, setTabMode] = useState<'Recipes' | 'Likes'>('Recipes');
     const [recipeItems, setRecipeItems] = useState<Recipe[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
     const [page, setPage] = useState<number>(0);
 
     const pageSize = 10;
@@ -31,35 +31,48 @@ export const UserActivityBox = () => {
         if (!dataArrays) return [];
         if (tabMode === 'Recipes') return dataArrays.recipes.slice(page*pageSize, page*pageSize+pageSize);
         else return dataArrays.recipesLiked.slice(page*pageSize, page*pageSize+pageSize);
-    }, [dataArrays, tabMode, page]);
+    }, [dataArrays, tabMode, page, pageSize]);
     
-    const { data: dataBatch, error: errorbatch, isLoading: isLoadingBatch } = useGetSelectedUserBatchQuery(batchIds.length ? { batchIds } : skipToken);
+    const totalIds = useMemo(() => {
+        const created = dataArrays?.recipes ?? [];
+        const liked   = dataArrays?.recipesLiked ?? [];
+        return tabMode === 'Recipes' ? created : liked;
+    }, [dataArrays, tabMode]);
+    
+    const { data: dataBatch, error: errorBatch, isLoading: isLoadingBatch } = useGetSelectedUserBatchQuery(batchIds.length ? { batchIds } : skipToken);
+
+    const fetchMoreData = useCallback(async () => {
+        setPage(prevState => prevState + 1);
+    },[page]);
 
     const navigate = useNavigate();
 
-    const userData = useAppSelector(getUserData);
+    const dispatch = useAppDispatch();
+
     const loggedUser = useAppSelector(getLoggedUser);
 
-    const { data: recipeItemsFetched, isLoading } = useGetRecipeItemsQuery(
-        userData?.uid ? { type: tabMode, chefId: userData.uid } : skipToken
-    );
-
     useEffect(() => {
-        setLoading(isLoading);
-        setRecipeItems(recipeItemsFetched ?? []);
-    }, [isLoading, recipeItemsFetched]);
+        if (dataBatch) {
+            if (page === 0) setRecipeItems(dataBatch);
+            else setRecipeItems(prevState => [...prevState, ...dataBatch]);
+        }
+    }, [dataBatch]);
 
 
     const handleAddNewRecipe = () => {
-        navigate('/add-recipe')
+        navigate('/add-recipe');
     }
 
     const handleTabModeChange = (_: React.MouseEvent<HTMLElement>, eventValue: 'Recipes' | 'Likes' | null) => {
         if (eventValue) {
+            setPage(0);
+            setRecipeItems([]);
             setTabMode(eventValue);
         }
     };
 
+
+    const hasMore = !isLoadingArrays && !isLoadingBatch && (recipeItems.length < totalIds.length);
 
     return (
         <Box alignSelf="center" width="90%">
@@ -111,8 +124,8 @@ export const UserActivityBox = () => {
                 sx={{ backgroundColor: '#FFF7EE' }}
             >
                 {tabMode === 'Recipes' && (
-                    <Grid container width="100%" direction="row"  justifyContent={loading ? "center" : "flex-start"}>
-                        {userData && userData?.uid === loggedUser?.uid && (
+                    <Grid container width="100%" direction="row"  justifyContent={isLoadingArrays || isLoadingBatch ? "center" : "flex-start"}>
+                        {userId === loggedUser?.uid && !isLoadingArrays && (
                                 <Grid item container xs={4} justifyContent="center" alignItems="center">
                                     <Button 
                                         onClick={handleAddNewRecipe}
@@ -125,19 +138,26 @@ export const UserActivityBox = () => {
                                     </Button>
                                 </Grid>
                         )}
-                        {loading ? (
-                            <>
-                                <Grid item container xs={4} justifyContent="center" alignItems="center">
-                                    <CircularProgress size="5rem" sx={{ color: colors.primary }} />
-                                </Grid>
-                                <Grid item container xs={4} />
-                            </>
+                        {isLoadingArrays || isLoadingBatch ? (
+                            <Grid item container xs={12} justifyContent="center" alignItems="center">
+                                <CircularProgress size="5rem" sx={{ color: colors.primary }} />
+                            </Grid>
                         ) : (
-                            recipeItems.map((r) => (
-                                <Grid item xs={4} key={r.id}>
-                                    <RecipeItem recipe={r} />
-                                </Grid>
-                            ))
+                            <InfiniteScroll
+                                dataLength={recipeItems.length}
+                                next={fetchMoreData}
+                                hasMore={hasMore}
+                                loader={<CircularProgress size="2rem" sx={{ color: colors.primary }} />}
+                                endMessage={null}
+                            >
+                                {
+                                    recipeItems.map((r) => (
+                                        <Grid item xs={4} key={r.id}>
+                                            <RecipeItem recipe={r} />
+                                        </Grid>
+                                    ))
+                                }
+                            </InfiniteScroll>
                         )}
                     </Grid>
                 )}

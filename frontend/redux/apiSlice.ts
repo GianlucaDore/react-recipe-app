@@ -318,12 +318,14 @@ export const firebaseApi = createApi({
           const recipesSnapshot = await getDocs(recipesQuery);
           
           const recipes: Array<Recipe> = [];
-          recipesSnapshot.forEach((doc) => {
+          recipesSnapshot.forEach(async (doc) => {
             const data = doc.data();
+            const recipeImageRef = ref(storage, data.imageURL);
+            const imageURL = await getDownloadURL(recipeImageRef);
             recipes.push({
               id: doc.id,
               title: data.title,
-              imageURL: data.imageURL,
+              imageURL: imageURL,
             });
           });
 
@@ -336,7 +338,50 @@ export const firebaseApi = createApi({
           return { error };
         }
       }
-    })
+    }),
+
+    setSelectedUserImage: builder.mutation<boolean, { userId: string; userName: string; userImage: File }>({
+      async queryFn({ userId, userName, userImage }) { 
+        try {
+          const user = auth.currentUser;
+          if (!user || user.uid !== userId) {
+            throw new Error("Error: user is not properly authenticated.");
+          }
+
+          const imageFileName = createImageFileName(userName, userImage.type);
+
+          if (imageFileName && userImage.size <= 10 * 1024 * 1024 && userImage.type.match(/image\/(jpg|jpeg|png)/)) {
+            const userImageRef = ref(storage, 'public/Chefs/' + imageFileName);
+            const ret = await uploadBytes(userImageRef, userImage);
+
+            if (ret.metadata.size) {
+              const imageURL = userImageRef.fullPath;
+              const userRef = doc(db, 'Chefs', userId);
+
+              if (userRef) {
+                try {
+                  const userImageRefURL = ref(storage, imageURL);
+                  const imageStorageURL = await getDownloadURL(userImageRefURL);
+                  await updateDoc(userRef, { photoURL: imageStorageURL });
+                  return { data: true }; 
+                } catch (error) {
+                  throw new Error(error as string);
+                }
+              } else {
+                throw new Error("Can't find chef with id " + userId);
+              }
+            } else {
+              throw new Error("Failed to upload image.");
+            }
+          } else {
+            throw new Error("Unsupported image format.");
+          }
+        } catch (error) {
+          return { error };
+        }
+      }
+    }),
+
   }),
   keepUnusedDataFor: 60
 });
@@ -351,6 +396,8 @@ export const {
   usePublishRecipeMutation,
   useAddLikeMutation,
   useRemoveLikeMutation,
+  useGetSelectedUserQuery,
   useGetSelectedUserRecipeArraysQuery,
-  useGetSelectedUserBatchQuery
+  useGetSelectedUserBatchQuery,
+  useSetSelectedUserImageMutation
 } = firebaseApi;

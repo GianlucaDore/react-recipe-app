@@ -210,7 +210,8 @@ export const fetchSingleRecipe = createAsyncThunk('recipe/fetchSingleRecipe',
     }
 )
 
-
+/****************** DEPRECATED ************************/
+/* THUNK DEPRECATED IN FAVOR OF A SPECIFIC RTK QUERY */
 export const fetchUserData = createAsyncThunk('recipe/fetchUserData',
     async (userId: string) => {
 

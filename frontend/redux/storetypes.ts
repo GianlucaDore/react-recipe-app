@@ -50,7 +50,6 @@ export interface RecipeOfTheDay extends Recipe {
 
 export interface RecipeState {
     loggedUser: UserInfo | null;
-    selectedUserData: ChefData | null;
     recipesDisplayed: Array<Recipe>;
     recipesPerPage: number;
     numberOfPages: number;
