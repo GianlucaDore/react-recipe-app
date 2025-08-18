@@ -14,6 +14,7 @@ import { Box, Button, CircularProgress, Grid, ToggleButton, ToggleButtonGroup, T
 import { PostAdd } from '@mui/icons-material'
 
 import { colors } from '../utils/theme'
+import { showSnackbarError } from '../utils/helpers'
 
 
 export const UserActivityBox = () => {
@@ -40,7 +41,7 @@ export const UserActivityBox = () => {
         return tabMode === 'Recipes' ? created : liked;
     }, [dataArrays, tabMode]);
     
-    const { data: dataBatch, error: errorBatch, isLoading: isLoadingBatch } = useGetSelectedUserBatchQuery(batchIds.length ? { batchIds } : skipToken);
+    const { data: dataBatch, error: errorBatch, isLoading: isLoadingBatch, isFetching: isFetchingBatch } = useGetSelectedUserBatchQuery(batchIds.length ? { batchIds } : skipToken);
 
     const fetchMoreData = useCallback(async () => {
         setPage(prevState => prevState + 1);
@@ -58,6 +59,13 @@ export const UserActivityBox = () => {
             else setRecipeItems(prevState => [...prevState, ...dataBatch]);
         }
     }, [dataBatch]);
+
+    useEffect(() => {
+        const err = errorArrays ?? errorBatch;
+        if (err) {
+            showSnackbarError(dispatch, err);
+        }
+    }, [errorArrays, errorBatch])
 
 
     const handleAddNewRecipe = () => {
@@ -130,7 +138,7 @@ export const UserActivityBox = () => {
             >
                 {
                     <Grid container width="100%" direction="row" justifyContent={isLoadingArrays || isLoadingBatch ? "center" : "flex-start"}>
-                        {isLoadingArrays || isLoadingBatch ? (
+                        {isLoadingArrays || isLoadingBatch || isFetchingBatch ? (
                             <Grid item container xs={12} justifyContent="center" alignItems="center">
                                 <CircularProgress size="5rem" sx={{ color: colors.primary }} />
                             </Grid>
