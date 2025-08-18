@@ -23,7 +23,7 @@ export const UserActivityBox = () => {
     const [recipeItems, setRecipeItems] = useState<Recipe[]>([]);
     const [page, setPage] = useState<number>(0);
 
-    const pageSize = 10;
+    const pageSize = 8;
 
     const { userId } = useParams();
     
@@ -41,7 +41,7 @@ export const UserActivityBox = () => {
         return tabMode === 'Recipes' ? created : liked;
     }, [dataArrays, tabMode]);
     
-    const { data: dataBatch, error: errorBatch, isLoading: isLoadingBatch, isFetching: isFetchingBatch } = useGetSelectedUserBatchQuery(batchIds.length ? { batchIds } : skipToken);
+    const { data: dataBatch, error: errorBatch, isLoading: isLoadingBatch } = useGetSelectedUserBatchQuery(batchIds.length ? { batchIds } : skipToken);
 
     const fetchMoreData = useCallback(async () => {
         setPage(prevState => prevState + 1);
@@ -130,27 +130,29 @@ export const UserActivityBox = () => {
                 </ToggleButton>
             </ToggleButtonGroup>
             <Box
-                display="flex" flexDirection="row" flexWrap="wrap" width="100%" minHeight="315px"
-                padding="15px"
-                border="2px solid #4e342e"
+                id="scrollable_box"
+                display="flex" flexDirection="row" flexWrap="wrap" width="100%" height="350px"
+                padding="15px"            
                 borderRadius="15px"
-                sx={{ backgroundColor: '#FFF7EE' }}
-            >
+                overflow="auto"
+                sx={{ backgroundColor: '#FFF7EE', outline: '2px solid #4e342e', outlineOffset: 0, '&::-webkit-scrollbar-track': { background: 'transparent' } }}
+            > 
                 {
                     <Grid container width="100%" direction="row" justifyContent={isLoadingArrays || isLoadingBatch ? "center" : "flex-start"}>
-                        {isLoadingArrays || isLoadingBatch || isFetchingBatch ? (
+                        {isLoadingArrays || isLoadingBatch  ? (
                             <Grid item container xs={12} justifyContent="center" alignItems="center">
                                 <CircularProgress size="5rem" sx={{ color: colors.primary }} />
                             </Grid>
                         ) : (
                             <Grid item container xs={12} direction="row" alignItems="center" sx={{ '& > .infinite-scroll-component__outerdiv': { width: '100%', height:'100%' } }}>
                                 <InfiniteScroll
+                                    scrollableTarget="scrollable_box"
                                     dataLength={recipeItems.length}
                                     next={fetchMoreData}
                                     hasMore={hasMore}
-                                    loader={null}
-                                    endMessage={null}
-                                    style={{ width: "100%", height: "100%", display: "flex", alignContent: "center", margin: "0px 0px 50px 0px" }}
+                                    loader={<CircularProgress size="5rem" sx={{ color: colors.primary, marginTop: "10px", marginLeft: "auto", marginRight: "auto" }} />}
+                                    endMessage={<Typography textAlign="center" fontSize="0.9rem" marginTop="20px">No more items to show.</Typography>}
+                                    style={{ width: "100%", display: "flex", flexDirection: "column", alignContent: "center", overflow: "hidden" }}
                                 >
                                     <Grid item container xs={12} rowGap="20px">
                                         {userId === loggedUser?.uid && !isLoadingArrays && (
@@ -167,7 +169,7 @@ export const UserActivityBox = () => {
                                             </Grid>)
                                         }
                                         {recipeItems.map((r) => (
-                                            <Grid container item xs={12} md={4} xl={3} key={r.id} justifyContent="center" alignItems="center">
+                                            <Grid container item xs={12} md={4} xl={3} key={r.id} justifyContent="center" alignItems="center" paddingTop="5px">
                                                 <RecipeItem recipe={r} />
                                             </Grid>
                                             ))
