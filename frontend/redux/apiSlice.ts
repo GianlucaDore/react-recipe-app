@@ -316,18 +316,27 @@ export const firebaseApi = createApi({
 
           const recipesQuery = query(collection(db, "Recipes"), where(documentId(), "in", batchIds))
           const recipesSnapshot = await getDocs(recipesQuery);
-          
-          const recipes: Array<Recipe> = [];
-          recipesSnapshot.forEach(async (doc) => {
-            const data = doc.data();
-            const recipeImageRef = ref(storage, data.imageURL);
-            const imageURL = await getDownloadURL(recipeImageRef);
-            recipes.push({
-              id: doc.id,
-              title: data.title,
-              imageURL: imageURL,
-            });
-          });
+        
+          const recipes = await Promise.all(
+              recipesSnapshot.docs.map(async (docSnap) => {
+                const data = docSnap.data() as { title?: string; imageURL?: string };
+                let finalImageURL = '';
+                if (data?.imageURL) {
+                  try {
+                    const recipeImageRef = ref(storage, data.imageURL);
+                    finalImageURL = await getDownloadURL(recipeImageRef);
+                  } catch {
+                    finalImageURL = "";
+                  }
+                }
+
+                return {
+                  id: docSnap.id,
+                  title: data?.title ?? '',
+                  imageURL: finalImageURL,
+                } as Recipe;
+              })
+          );
 
           const orderIndex = new Map(batchIds.map((id, i) => [id, i]));
           recipes.sort((a, b) => (orderIndex.get(a.id)! - orderIndex.get(b.id)!));
