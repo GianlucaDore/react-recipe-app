@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
+import InfiniteScroll from 'react-infinite-scroll-component'
 
 import { getLoggedUser } from '../redux/recipeSlice'
 import { useGetSelectedUserBatchQuery, useGetSelectedUserRecipeArraysQuery } from '../redux/apiSlice'
@@ -13,7 +14,6 @@ import { Box, Button, CircularProgress, Grid, ToggleButton, ToggleButtonGroup, T
 import { PostAdd } from '@mui/icons-material'
 
 import { colors } from '../utils/theme'
-import InfiniteScroll from 'react-infinite-scroll-component'
 
 
 export const UserActivityBox = () => {
@@ -122,50 +122,54 @@ export const UserActivityBox = () => {
                 </ToggleButton>
             </ToggleButtonGroup>
             <Box
-                display="flex" flexDirection="row" flexWrap="wrap" width="100%" minHeight="234px"
+                display="flex" flexDirection="row" flexWrap="wrap" width="100%" minHeight="315px"
                 padding="15px"
                 border="2px solid #4e342e"
                 borderRadius="15px"
                 sx={{ backgroundColor: '#FFF7EE' }}
             >
-                {tabMode === 'Recipes' && (
-                    <Grid container width="100%" direction="row"  justifyContent={isLoadingArrays || isLoadingBatch ? "center" : "flex-start"}>
-                        {userId === loggedUser?.uid && !isLoadingArrays && (
-                                <Grid item container xs={4} justifyContent="center" alignItems="center">
-                                    <Button 
-                                        onClick={handleAddNewRecipe}
-                                        sx={{display: "flex", flexDirection: "row", columnGap: "10px", alignItems: "center"}}
-                                    >
-                                        <PostAdd />
-                                        <Box marginTop="3px">
-                                            Create new recipe
-                                        </Box>
-                                    </Button>
-                                </Grid>
-                        )}
+                {
+                    <Grid container width="100%" direction="row" justifyContent={isLoadingArrays || isLoadingBatch ? "center" : "flex-start"}>
                         {isLoadingArrays || isLoadingBatch ? (
                             <Grid item container xs={12} justifyContent="center" alignItems="center">
                                 <CircularProgress size="5rem" sx={{ color: colors.primary }} />
                             </Grid>
                         ) : (
-                            <InfiniteScroll
-                                dataLength={recipeItems.length}
-                                next={fetchMoreData}
-                                hasMore={hasMore}
-                                loader={<CircularProgress size="2rem" sx={{ color: colors.primary }} />}
-                                endMessage={null}
-                            >
-                                {
-                                    recipeItems.map((r) => (
-                                        <Grid item xs={4} key={r.id}>
-                                            <RecipeItem recipe={r} />
+                            <Grid item container xs={12} direction="row" alignItems="center" sx={{ '& > .infinite-scroll-component__outerdiv': { width: '100%', height:'100%' } }}>
+                                <InfiniteScroll
+                                    dataLength={recipeItems.length}
+                                    next={fetchMoreData}
+                                    hasMore={hasMore}
+                                    loader={null}
+                                    endMessage={null}
+                                    style={{ width: "100%", height: "100%", display: "flex", alignContent: "center", margin: "0px 0px 50px 0px" }}
+                                >
+                                    <Grid item container xs={12} rowGap="20px">
+                                        {userId === loggedUser?.uid && !isLoadingArrays && (
+                                            <Grid item container xs={12} md={4} xl={3} justifyContent="center" alignItems="center">
+                                                <Button 
+                                                    onClick={handleAddNewRecipe}
+                                                    sx={{ display: "flex", flexDirection: "row", columnGap: "10px", alignItems: "center"}}
+                                                >
+                                                    <PostAdd />
+                                                    <Box marginTop="3px">
+                                                        Create new recipe
+                                                    </Box>
+                                                </Button>
+                                            </Grid>)
+                                        }
+                                        {recipeItems.map((r) => (
+                                            <Grid container item xs={12} md={4} xl={3} key={r.id} justifyContent="center" alignItems="center">
+                                                <RecipeItem recipe={r} />
+                                            </Grid>
+                                            ))
+                                        }
                                         </Grid>
-                                    ))
-                                }
-                            </InfiniteScroll>
+                                </InfiniteScroll>
+                            </Grid>
                         )}
                     </Grid>
-                )}
+                }
             </Box>
         </Box>
     )

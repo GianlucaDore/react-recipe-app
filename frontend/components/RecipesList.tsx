@@ -58,7 +58,7 @@ export const RecipeItem = (props: RecipeItemProps) => {
     }
 
     return (
-        <Box display="flex" justifyContent="center">
+        <Box display="flex" justifyContent="center" width="100%">
             <Card sx={{ width: "90%", height: "200px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", '&:hover': { transform: "scale(1.05)" } }}>
                 <CardActionArea onClick={handleRecipeItemClick} sx={{ display: "flex", height: "100%", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
                     {recipe ? (
