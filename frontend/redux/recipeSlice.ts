@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-import { fetchLogout, fetchRecipeOfTheDay, fetchRecipesBatch, fetchTotalNumberOfPagesInHome, fetchUserData } from './thunks';
+import { fetchLogout, fetchRecipeOfTheDay, fetchRecipesBatch, fetchTotalNumberOfPagesInHome } from './thunks';
 import { RecipeState } from './storetypes';
 import { RootState } from './store';
 

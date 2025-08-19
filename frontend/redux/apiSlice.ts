@@ -467,6 +467,7 @@ export const {
   usePublishRecipeMutation,
   useAddLikeMutation,
   useRemoveLikeMutation,
+  useGetSelectedRecipePageQuery,
   useGetSelectedUserQuery,
   useGetSelectedUserRecipeArraysQuery,
   useGetSelectedUserBatchQuery,
