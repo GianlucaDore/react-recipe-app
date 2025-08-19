@@ -53,7 +53,6 @@ export interface RecipeState {
     recipesDisplayed: Array<Recipe>;
     recipesPerPage: number;
     numberOfPages: number;
-    currentRecipe: RecipeDetails | null;
     recipeOfTheDay: RecipeOfTheDay | null;
 }
 

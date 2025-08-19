@@ -8,7 +8,7 @@ import {
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { capitalizeFirstLetterAfterSpace, createImageFileName } from "../utils/helpers";
 
-import { ChefData, Ingredient, IngredientSuggestion, Recipe, RecipeToSubmit } from "./storetypes";
+import { ChefData, Ingredient, IngredientSuggestion, Recipe, RecipeDetails, RecipeToSubmit } from "./storetypes";
 
 
 export const firebaseApi = createApi({
@@ -254,6 +254,68 @@ export const firebaseApi = createApi({
         }
       },
       invalidatesTags: ['Recipes', 'Chefs']
+    }),
+
+    getSelectedRecipePage: builder.query<RecipeDetails, { recipeId: string }>({
+      async queryFn({ recipeId }) {
+        try {
+          const singleRecipeRef = doc(db, "Recipes", recipeId);
+          const singleRecipeSnap = await getDoc(singleRecipeRef);
+          const recipeData = singleRecipeSnap.data();
+
+          if (recipeData) {
+            await updateDoc(singleRecipeRef, { views: increment(1) });
+            const updatedRecipeSnap = await getDoc(singleRecipeRef);
+            const updatedRecipeData = updatedRecipeSnap.data();
+
+            const recipeImageRef = ref(storage, recipeData.imageURL);
+            const imageURL = await getDownloadURL(recipeImageRef);
+
+            const chefRef = doc(db, "Chefs", recipeData.chef);
+            await updateDoc(chefRef, { totalViews: increment(1) });
+            const updatedChefSnap = await getDoc(chefRef);
+            const updatedChefData = updatedChefSnap.data();
+
+            let chefData: ChefData;
+            if (updatedChefData) {
+              chefData = {
+                  uid: updatedChefData.uid,
+                  displayName: updatedChefData.displayName,
+                  email: updatedChefData.email,
+                  photoURL: updatedChefData.photoURL,
+                  likesReceived: updatedChefData.likesReceived,
+                  totalViews: updatedChefData.totalViews,
+                  publishedRecipes: updatedChefData.publishedRecipes,
+                  recipes: updatedChefData.recipes,
+                  recipesLiked: updatedChefData.recipesLiked,
+              };
+            }
+            else return { error: new Error("Can't retrieve chef data for the recipe with id " + recipeId) };
+
+            if (updatedRecipeData !== undefined) {
+              const recipeObject: RecipeDetails = {
+                  id: recipeId,
+                  title: recipeData.title,
+                  ingredients: recipeData.ingredients,
+                  preparation: recipeData.preparation,
+                  chef: chefData,
+                  minutesNeeded: recipeData.minutesNeeded,
+                  difficulty: recipeData.difficulty,
+                  views: recipeData.views,
+                  likes: recipeData.likes,
+                  likedBy: recipeData.likedBy,
+                  imageURL: imageURL
+              }
+              return { data: recipeObject };
+            }    
+            else return { error: new Error("Can't retrieve the requested recipe with id " + recipeId) };
+          }
+          else return { error: new Error("Can't retrieve the requested recipe with id " + recipeId) };
+        }
+        catch (error) {
+          return { error }
+        }
+      }
     }),
 
     getSelectedUser: builder.query<ChefData, { userId: string; }>({

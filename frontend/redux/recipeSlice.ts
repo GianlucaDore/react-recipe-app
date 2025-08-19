@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-import { fetchLogout, fetchRecipeOfTheDay, fetchRecipesBatch, fetchSingleRecipe, fetchTotalNumberOfPagesInHome, fetchUserData } from './thunks';
+import { fetchLogout, fetchRecipeOfTheDay, fetchRecipesBatch, fetchTotalNumberOfPagesInHome, fetchUserData } from './thunks';
 import { RecipeState } from './storetypes';
 import { RootState } from './store';
 
@@ -10,7 +10,6 @@ const initialState: RecipeState = {
     recipesDisplayed: [],
     recipesPerPage: 3,
     numberOfPages: 1,
-    currentRecipe: null,
     recipeOfTheDay: null
 }
 
@@ -20,12 +19,6 @@ export const recipeSlice = createSlice({
     reducers: {
         setUser: (state, action) => {
             state.loggedUser = action.payload;
-        },
-        setRecipeLikedBy: (state, action) => {
-            state.currentRecipe!.likedBy = action.payload;
-        },
-        setRecipeLikes: (state, action) => {
-            state.currentRecipe!.likes = action.payload;
         }
     },
     extraReducers: (builder) => {
@@ -59,16 +52,6 @@ export const recipeSlice = createSlice({
                 console.log("Retrieved requested batch of recipes (Promise fulfilled).");
                 state.recipesDisplayed = action.payload;
             })
-            .addCase(fetchSingleRecipe.pending, () => {
-                console.log("Promise fetchSingleRecipe is pending.");
-            })
-            .addCase(fetchSingleRecipe.rejected, (_, action) => {
-                console.error("Promise fetchSingleRecipe was rejected with error: ", action.payload);
-            })
-            .addCase(fetchSingleRecipe.fulfilled, (state, action) => {
-                console.log("Retrieved requested batch of recipes (Promise fulfilled).");
-                state.currentRecipe = action.payload;
-            })
             .addCase(fetchLogout.rejected, (_, action) => {
                 console.error("An error occurred while logging out: ", action.payload);
             })
@@ -85,9 +68,8 @@ export const getRecipeOfTheDay = (state: RootState): typeof state.recipe.recipeO
 export const getRecipesDisplayed = (state: RootState): typeof state.recipe.recipesDisplayed => state.recipe.recipesDisplayed;
 export const getNumberOfRecipesToDisplayInHome = (state: RootState): typeof state.recipe.recipesPerPage => state.recipe.recipesPerPage;
 export const getNumberOfPagesInHome = (state: RootState): typeof state.recipe.numberOfPages => state.recipe.numberOfPages;
-export const getCurrentRecipe = (state: RootState): typeof state.recipe.currentRecipe => state.recipe.currentRecipe;
 
-export const { setUser, setRecipeLikedBy, setRecipeLikes } = recipeSlice.actions;
+export const { setUser } = recipeSlice.actions;
 
 
 export default recipeSlice.reducer;
