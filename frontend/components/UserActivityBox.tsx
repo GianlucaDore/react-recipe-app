@@ -65,7 +65,7 @@ export const UserActivityBox = () => {
         if (err) {
             showSnackbarError(dispatch, err);
         }
-    }, [errorArrays, errorBatch])
+    }, [errorArrays, errorBatch, dispatch]);
 
 
     const handleAddNewRecipe = () => {

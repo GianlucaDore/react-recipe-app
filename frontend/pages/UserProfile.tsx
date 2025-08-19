@@ -6,6 +6,8 @@ import { AddAPhoto, Edit } from "@mui/icons-material";
 
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
 import { getLoggedUser } from "../redux/recipeSlice";
+import { useGetSelectedUserQuery, useSetSelectedUserImageMutation } from "../redux/apiSlice";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 import { showSnackbarError, showSnackbarSuccess } from "../utils/helpers";
 
@@ -16,8 +18,6 @@ import { Toaster } from "../components/Toaster";
 
 
 import defaultChef from '../assets/default_chef.jpg';
-import { useGetSelectedUserQuery, useSetSelectedUserImageMutation } from "../redux/apiSlice";
-import { skipToken } from "@reduxjs/toolkit/query";
 
 
 export const UserProfile = () => {
