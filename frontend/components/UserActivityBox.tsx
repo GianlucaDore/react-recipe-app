@@ -131,7 +131,7 @@ export const UserActivityBox = () => {
             </ToggleButtonGroup>
             <Box
                 id="scrollable_box"
-                display="flex" flexDirection="row" flexWrap="wrap" width="100%" height="350px"
+                display="flex" flexDirection="row" flexWrap="wrap" width="100%" height={recipeItems.length > 0 ? "350px" : "245px"}
                 padding="15px"            
                 borderRadius="15px"
                 overflow="auto"
@@ -144,18 +144,18 @@ export const UserActivityBox = () => {
                                 <CircularProgress size="5rem" sx={{ color: colors.primary }} />
                             </Grid>
                         ) : (
-                            <Grid item container xs={12} direction="row" alignItems="center" sx={{ '& > .infinite-scroll-component__outerdiv': { width: '100%', height:'100%' } }}>
+                            <Grid item container xs={12} direction="row" alignItems="center" sx={{ '& > .infinite-scroll-component__outerdiv': { width: '100%' } }}>
                                 <InfiniteScroll
                                     scrollableTarget="scrollable_box"
                                     dataLength={recipeItems.length}
                                     next={fetchMoreData}
                                     hasMore={hasMore}
                                     loader={<CircularProgress size="5rem" sx={{ color: colors.primary, marginTop: "10px", marginLeft: "auto", marginRight: "auto" }} />}
-                                    endMessage={<Typography textAlign="center" fontSize="0.9rem" marginTop="20px">No more items to show.</Typography>}
+                                    endMessage={recipeItems.length > 0 && <Typography textAlign="center" fontSize="0.9rem" marginTop="20px">No more items to show.</Typography>}
                                     style={{ width: "100%", display: "flex", flexDirection: "column", alignContent: "center", overflow: "hidden" }}
                                 >
                                     <Grid item container xs={12} rowGap="20px">
-                                        {userId === loggedUser?.uid && !isLoadingArrays && (
+                                        {userId === loggedUser?.uid && !isLoadingArrays && tabMode === 'Recipes' && (
                                             <Grid item container xs={12} md={4} xl={3} justifyContent="center" alignItems="center">
                                                 <Button 
                                                     onClick={handleAddNewRecipe}
