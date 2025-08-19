@@ -2,13 +2,13 @@ import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
 import { getAuth, User } from "firebase/auth";
 import { auth, db, storage } from "../firebase/auth/firebase";
 import {
-  addDoc, arrayRemove, arrayUnion, collection, doc, endAt, getDoc, getDocs, increment,
-  limit, orderBy, query, setDoc, startAfter, startAt, updateDoc, where
+  addDoc, arrayRemove, arrayUnion, collection, doc, documentId, endAt, getDoc, getDocs, increment,
+  orderBy, query, setDoc, startAt, updateDoc, where
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { capitalizeFirstLetterAfterSpace, createImageFileName } from "../utils/helpers";
 
-import { ChefData, Ingredient, IngredientSuggestion, Recipe, RecipeToSubmit } from "../redux/storetypes";
+import { ChefData, Ingredient, IngredientSuggestion, Recipe, RecipeToSubmit } from "./storetypes";
 
 
 export const firebaseApi = createApi({
@@ -254,8 +254,145 @@ export const firebaseApi = createApi({
         }
       },
       invalidatesTags: ['Recipes', 'Chefs']
-    })
-  })
+    }),
+
+    getSelectedUser: builder.query<ChefData, { userId: string; }>({
+      async queryFn({ userId }) {
+        try {
+          const userRef = doc(db, "Chefs", userId);
+          const userSnapshot = await getDoc(userRef);
+
+          if (userSnapshot.exists()) {
+            const userData = userSnapshot.data();
+            const chefData: ChefData = {
+              uid: userData.uid,
+              displayName: userData.displayName,
+              email: userData.email,
+              photoURL: userData.photoURL,
+              likesReceived: userData.likesReceived,
+              totalViews: userData.totalViews,
+              publishedRecipes: userData.publishedRecipes,
+              recipes: userData.recipes,
+              recipesLiked: userData.recipesLiked
+            };
+            return { data: chefData }; 
+          }
+          else return { error: new Error("User requested does not exist") };
+        }
+        catch (error) {
+          return { error };
+        }
+      }
+    }),
+
+    getSelectedUserRecipeArrays: builder.query<{recipes: Array<string>, recipesLiked: Array<string>}, { userId: string }>({
+      async queryFn({ userId }) {
+        try {
+          const userRef = doc(db, "Chefs", userId);
+          const userSnapshot = await getDoc(userRef);
+
+          if (userSnapshot.exists()) {
+            const userData = userSnapshot.data();
+            const recipeArrays: {recipes: Array<string>, recipesLiked: Array<string>} = {
+              recipes: userData.recipes,
+              recipesLiked: userData.recipesLiked
+            };
+            return { data: recipeArrays }; 
+          }
+          else return { error: new Error("User requested does not exist") };
+        }
+        catch (error) {
+          return { error };
+        }
+      }
+    }),
+
+    getSelectedUserBatch: builder.query<Array<Recipe>, { batchIds: Array<string> }>({
+      async queryFn({ batchIds }) {
+        try {
+          if (!batchIds || batchIds.length === 0) {
+            return { data: [] as Recipe[] };
+          }
+
+          const recipesQuery = query(collection(db, "Recipes"), where(documentId(), "in", batchIds))
+          const recipesSnapshot = await getDocs(recipesQuery);
+        
+          const recipes = await Promise.all(
+              recipesSnapshot.docs.map(async (docSnap) => {
+                const data = docSnap.data() as { title?: string; imageURL?: string };
+                let finalImageURL = '';
+                if (data?.imageURL) {
+                  try {
+                    const recipeImageRef = ref(storage, data.imageURL);
+                    finalImageURL = await getDownloadURL(recipeImageRef);
+                  } catch {
+                    finalImageURL = "";
+                  }
+                }
+
+                return {
+                  id: docSnap.id,
+                  title: data?.title ?? '',
+                  imageURL: finalImageURL,
+                } as Recipe;
+              })
+          );
+
+          const orderIndex = new Map(batchIds.map((id, i) => [id, i]));
+          recipes.sort((a, b) => (orderIndex.get(a.id)! - orderIndex.get(b.id)!));
+          
+          return { data: recipes };
+        }
+        catch (error) {
+          return { error };
+        }
+      }
+    }),
+
+    setSelectedUserImage: builder.mutation<boolean, { userId: string; userName: string; userImage: File }>({
+      async queryFn({ userId, userName, userImage }) { 
+        try {
+          const user = auth.currentUser;
+          if (!user || user.uid !== userId) {
+            throw new Error("Error: user is not properly authenticated.");
+          }
+
+          const imageFileName = createImageFileName(userName, userImage.type);
+
+          if (imageFileName && userImage.size <= 10 * 1024 * 1024 && userImage.type.match(/image\/(jpg|jpeg|png)/)) {
+            const userImageRef = ref(storage, 'public/Chefs/' + imageFileName);
+            const ret = await uploadBytes(userImageRef, userImage);
+
+            if (ret.metadata.size) {
+              const imageURL = userImageRef.fullPath;
+              const userRef = doc(db, 'Chefs', userId);
+
+              if (userRef) {
+                try {
+                  const userImageRefURL = ref(storage, imageURL);
+                  const imageStorageURL = await getDownloadURL(userImageRefURL);
+                  await updateDoc(userRef, { photoURL: imageStorageURL });
+                  return { data: true }; 
+                } catch (error) {
+                  throw new Error(error as string);
+                }
+              } else {
+                throw new Error("Can't find chef with id " + userId);
+              }
+            } else {
+              throw new Error("Failed to upload image.");
+            }
+          } else {
+            throw new Error("Unsupported image format.");
+          }
+        } catch (error) {
+          return { error };
+        }
+      }
+    }),
+
+  }),
+  keepUnusedDataFor: 60
 });
 
 
@@ -267,5 +404,9 @@ export const {
   useGetRecipeItemsQuery,
   usePublishRecipeMutation,
   useAddLikeMutation,
-  useRemoveLikeMutation
+  useRemoveLikeMutation,
+  useGetSelectedUserQuery,
+  useGetSelectedUserRecipeArraysQuery,
+  useGetSelectedUserBatchQuery,
+  useSetSelectedUserImageMutation
 } = firebaseApi;

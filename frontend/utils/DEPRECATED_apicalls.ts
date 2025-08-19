@@ -395,11 +395,6 @@ export const fetchSearchResultsBatch = async (term: string | null, page: number)
                 }
                 return recipeItem;
             }
-            return {
-                id: doc.id,
-                title: recipeData.title,
-                imageURL: recipeData.imageURL
-            } as Recipe;
         });
     };
 

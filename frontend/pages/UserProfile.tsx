@@ -1,82 +1,95 @@
-import { Avatar, Badge, Box, Button, IconButton, Typography } from "@mui/material"
-import { useAppDispatch, useAppSelector } from "../redux/hooks"
-import { getUserData, setUserImage } from "../redux/recipeSlice";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { fetchUserData } from "../redux/thunks";
+
+import { Avatar, Badge, Box, Button, IconButton, Skeleton, Typography } from "@mui/material"
+import { AddAPhoto, Edit } from "@mui/icons-material";
+
+import { useAppDispatch, useAppSelector } from "../redux/hooks"
+import { getLoggedUser } from "../redux/recipeSlice";
+
+import { showSnackbarError, showSnackbarSuccess } from "../utils/helpers";
+
 import { RecipeAppBar } from "../components/RecipeAppBar";
 import { UserStats } from "../components/UserStats";
-import defaultChef from '../assets/default_chef.jpg';
-import { AddAPhoto, Edit } from "@mui/icons-material";
-import { updateUserImage } from "../utils/DEPRECATED_apicalls";
 import { UserActivityBox } from "../components/UserActivityBox";
-import { showSnackbarError, showSnackbarSuccess } from "../utils/helpers";
 import { Toaster } from "../components/Toaster";
+
+
+import defaultChef from '../assets/default_chef.jpg';
+import { useGetSelectedUserQuery, useSetSelectedUserImageMutation } from "../redux/apiSlice";
+import { skipToken } from "@reduxjs/toolkit/query";
+
 
 export const UserProfile = () => {
 
+    const [localUserImage, setLocalUserImage] = useState<string | null>(null);
+    
     const { userId } = useParams();
+
+    const { data: userData, error: userDataError, isLoading: isUserDataLoading } = useGetSelectedUserQuery(userId ? { userId } : skipToken);
+    const [setSelectedUserImage, { isLoading: isSetImageLoading, isSuccess: isSetImageSuccess, error: setImageError }] = useSetSelectedUserImageMutation();
 
     const dispatch = useAppDispatch();
 
-    const userData = useAppSelector(getUserData);
-
+    const loggedUser = useAppSelector(getLoggedUser);
 
     useEffect(() => {
-        const fetchUserDataFunction = async () => {
-            if (userId === undefined) {
-                showSnackbarError(dispatch, "Invalid user ID provided.");
-                return;
-            }
-            try {
-                await dispatch(fetchUserData(userId)).unwrap();
-            } catch (error) {
-                showSnackbarError(dispatch, error);
-            }
+        const err = userDataError ?? setImageError;
+        if (err) {
+            showSnackbarError(dispatch, err);
         }
-        fetchUserDataFunction();
-        
-    }, [dispatch, userId]);
+        if (isSetImageSuccess) {
+            showSnackbarSuccess(dispatch, "Image updated successfully!");
+        }
+    }, [userDataError, setImageError, isSetImageSuccess]);
 
 
     const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files) {
-            try {
-                const imageURL = await updateUserImage(userData!.displayName, userData!.uid, event.target.files[0]);
-                dispatch(setUserImage(imageURL));
-                showSnackbarSuccess(dispatch, "User image updated successfully!")
+        if (event.target.files && userId && loggedUser) {
+            const file = event.target.files[0];
+            if (file && file.size <= 10 * 1024 * 1024 && file.type.match(/image\/(jpg|jpeg|png)/)) {
+                try {      
+                    const localImageUrl = URL.createObjectURL(file);
+                    setLocalUserImage(localImageUrl);
+
+                    await setSelectedUserImage({
+                        userId: loggedUser.uid,          
+                        userName: loggedUser.displayName ? loggedUser.displayName : "null", 
+                        userImage: file
+                    });
+                } catch (error) {
+                    showSnackbarError(dispatch, error);
+                }
+            } else {
+                showSnackbarError(dispatch, "Invalid image file");
             }
-            catch (error) {
-                console.error("Error while updating user image: ", error)
-                showSnackbarError(dispatch, error);
-            }
+        } 
+        else {
+            showSnackbarError(dispatch, "Missing required user info");
         }
-    }
+    };
+
+
+    const isAddOrChangeImageBadgeVisible: boolean = !!loggedUser && userData?.uid === loggedUser.uid;
+    const srcUserImage: string = localUserImage ?? userData?.photoURL ?? defaultChef;
 
 
     return (
         <>
             <RecipeAppBar />
             <Toaster />
-            {userData && (
-                <Box width="100%" marginTop="30px" display="flex" flexDirection="column" justifyContent="center" rowGap="50px">
-                    <Box display="flex" flexDirection="column" alignItems="center">
-                        <Badge overlap="circular" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            <Box width="100%" marginTop="30px" marginBottom="20px" display="flex" flexDirection="column" justifyContent="center" rowGap="50px">
+                <Box display="flex" flexDirection="column" alignItems="center">
+                    {(!userData || isUserDataLoading || isSetImageLoading) ? 
+                        (<Skeleton variant="circular">
+                            <Avatar sx={{ width: 120, height: 120 }}/>
+                        </Skeleton>)
+                        : 
+                        (<Badge invisible={!isAddOrChangeImageBadgeVisible} overlap="circular" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                             badgeContent={userData.photoURL ? 
-                                <Button sx={{ padding: 0 }}>
+                                (<Button sx={{ padding: 0 }}>
                                     <IconButton aria-label="Upload picture..." component="label" sx={{ color: "white", padding: 0 }}>
-                                    <Edit />
-                                    <input 
-                                        type="file"
-                                        accept="image/*"
-                                        hidden
-                                        onChange={handleImageChange}
-                                    />
-                                </IconButton>
-                                </Button>
-                                
-                                :   <IconButton color="warning" aria-label="Upload picture..." component="label">
-                                        <AddAPhoto />
+                                        <Edit />
                                         <input 
                                             type="file"
                                             accept="image/*"
@@ -84,27 +97,52 @@ export const UserProfile = () => {
                                             onChange={handleImageChange}
                                         />
                                     </IconButton>
+                                </Button>)
+                                :   
+                                (<IconButton color="warning" aria-label="Upload picture..." component="label">
+                                    <AddAPhoto />
+                                    <input 
+                                        type="file"
+                                        accept="image/*"
+                                        hidden
+                                        onChange={handleImageChange}
+                                    />
+                                </IconButton>)
                             }
                         >
                             <Avatar 
-                                src={(userData.photoURL) ? userData.photoURL : defaultChef} 
+                                src={srcUserImage} 
                                 alt={(userData.displayName) ? userData.displayName : "Generic chef"}
                                 sx={{ width: 120, height: 120 }}
                             />
                         </Badge>
-                        <Typography variant="h3">{userData.displayName}</Typography>
-                        <Typography variant="h6">{userData.email}</Typography>
-                    </Box>
-                    <Box>
-                        <UserStats 
+                        )
+                    }
+                    <Typography variant="h3">
+                        {(!userData || isUserDataLoading) ? <Skeleton width="100px"/> : userData.displayName}
+                    </Typography>
+                    <Typography variant="h6">
+                        {(!userData || isUserDataLoading) ? <Skeleton width="90px"/> : userData.email}
+                    </Typography>
+                </Box>
+                <Box width="100%">
+                    {(!userData || isUserDataLoading) ? 
+                        (<Skeleton sx={{ marginLeft: "auto", marginRight: "auto" }}>
+                            <UserStats 
+                                likesReceived={0} 
+                                totalViews={0} 
+                                publishedRecipes={0} 
+                            />
+                        </Skeleton>)
+                        :
+                        (<UserStats 
                             likesReceived={userData.likesReceived} 
                             totalViews={userData.totalViews} 
                             publishedRecipes={userData.publishedRecipes} 
-                        />
-                    </Box>
-                    <UserActivityBox />
+                        />)}
                 </Box>
-            )}
+                <UserActivityBox />
+            </Box>
         </>
     );
 }
