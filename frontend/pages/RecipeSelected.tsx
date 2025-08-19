@@ -1,21 +1,27 @@
-import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { fetchSingleRecipe, fetchTotalNumberOfPagesInHome } from "../redux/thunks";
-import { getCurrentRecipe } from "../redux/recipeSlice";
-import { RecipeAppBar } from "../components/RecipeAppBar";
+import { FC, useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router";
+
 import { Accordion, AccordionDetails, AccordionSummary, Backdrop, Box, Button, CircularProgress, Fade, Grid, LinearProgress, List, Modal, Typography } from "@mui/material";
-import { RecipeStats } from "../components/RecipeStats";
-import DOMPurify from "dompurify";
-import parse from 'html-react-parser';
 import { ExpandMoreRounded, OpenInFull } from "@mui/icons-material";
-import { colors } from "../utils/theme";
-import { ChefTitle } from "../components/ChefTitle";
+
+import { useAppDispatch } from "../redux/hooks";
+import { useGetSelectedRecipePageQuery } from "../redux/apiSlice";
+import { skipToken } from "@reduxjs/toolkit/query";
+
 import { showSnackbarError } from "../utils/helpers";
+
+import { RecipeAppBar } from "../components/RecipeAppBar";
+import { RecipeStats } from "../components/RecipeStats";
+import { ChefTitle } from "../components/ChefTitle";
 import { Toaster } from "../components/Toaster";
 
+import DOMPurify from "dompurify";
+import parse from 'html-react-parser';
 
-export const RecipeSelected = () => {
+import { colors } from "../utils/theme";
+
+
+export const RecipeSelected: FC<void> = () => {
 
     const [modalStatus, setModalStatus] = useState<boolean>(false);
 
@@ -23,32 +29,23 @@ export const RecipeSelected = () => {
 
     const dispatch = useAppDispatch();
 
-    const recipeData = useAppSelector(getCurrentRecipe);
+    const { data: recipeData, error: errorRecipe, isLoading: isRecipeLoading } = useGetSelectedRecipePageQuery(recipeId ? { recipeId } : skipToken);
 
     const sanitizedHtml = useMemo(() => {
-        if (recipeData?.preparation) {
-          return DOMPurify.sanitize(recipeData.preparation);
+        if (recipeData) {
+            if (recipeData.preparation) {
+                return DOMPurify.sanitize(recipeData.preparation);
+            }
+            else return '';
         }
         else return '';
       }, [recipeData?.preparation]);
 
-
     useEffect(() => {
-        const fetchSingleRecipeFunction = async () => {
-            if (recipeId === undefined) {
-                showSnackbarError(dispatch, "Invalid recipe ID provided.");
-                return;
-            }
-            try {
-                await dispatch(fetchSingleRecipe(recipeId)).unwrap();
-                await dispatch(fetchTotalNumberOfPagesInHome()).unwrap();
-            } catch (error) {
-                showSnackbarError(dispatch, error);
-            }
-        };
-        fetchSingleRecipeFunction();
-
-    }, [dispatch, recipeId]);
+        if (errorRecipe) {
+            showSnackbarError(dispatch, errorRecipe);
+        }
+    }, [errorRecipe, dispatch]);
 
 
     const handleOpenIngredientModal = () => {
@@ -158,15 +155,15 @@ const ingredientBoxStyle = {
     backgroundColor: colors.tertiary, 
     overflowY: 'auto',
     '&::-webkit-scrollbar-track': {
-        background: colors.secondary, // Background of the scrollbar track
+        background: colors.secondary,
         borderRadius: '10px',
     },
     '&::-webkit-scrollbar-thumb': {
-        background: colors.primary, // Color of the scrollbar thumb
+        background: colors.primary,
         borderRadius: '10px',
     },
     '&::-webkit-scrollbar-thumb:hover': {
-        // background: colors.highlight, // Color on hover
+        // background: colors.highlight
     },
 }
 
