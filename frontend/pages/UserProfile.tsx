@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 import { Avatar, Badge, Box, Button, IconButton, Skeleton, Typography } from "@mui/material"
@@ -27,11 +27,21 @@ export const UserProfile = () => {
     const { userId } = useParams();
 
     const { data: userData, error: userDataError, isLoading: isUserDataLoading } = useGetSelectedUserQuery(userId ? { userId } : skipToken);
-    const [setSelectedUserImage, { isLoading: isSetImageLoading, isError: isSetImageError, isSuccess: isSetImageSuccess, error: setImageError }] = useSetSelectedUserImageMutation();
+    const [setSelectedUserImage, { isLoading: isSetImageLoading, isSuccess: isSetImageSuccess, error: setImageError }] = useSetSelectedUserImageMutation();
 
     const dispatch = useAppDispatch();
 
     const loggedUser = useAppSelector(getLoggedUser);
+
+    useEffect(() => {
+        const err = userDataError ?? setImageError;
+        if (err) {
+            showSnackbarError(dispatch, err);
+        }
+        if (isSetImageSuccess) {
+            showSnackbarSuccess(dispatch, "Image updated successfully!");
+        }
+    }, [userDataError, setImageError, isSetImageSuccess]);
 
 
     const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,22 +52,18 @@ export const UserProfile = () => {
                     const localImageUrl = URL.createObjectURL(file);
                     setLocalUserImage(localImageUrl);
 
-                    const result = await setSelectedUserImage({
+                    await setSelectedUserImage({
                         userId: loggedUser.uid,          
                         userName: loggedUser.displayName ? loggedUser.displayName : "null", 
                         userImage: file
-                    }).unwrap();
-
-                    if (result) {
-                        showSnackbarSuccess(dispatch, "User image updated successfully!");
-                    }
+                    });
                 } catch (error) {
                     showSnackbarError(dispatch, error);
                 }
             } else {
                 showSnackbarError(dispatch, "Invalid image file");
             }
-            } 
+        } 
         else {
             showSnackbarError(dispatch, "Missing required user info");
         }
