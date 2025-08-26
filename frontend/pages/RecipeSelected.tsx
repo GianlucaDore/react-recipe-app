@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { CSSProperties, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { fetchSingleRecipe, fetchTotalNumberOfPagesInHome } from "../redux/thunks";
 import { getCurrentRecipe } from "../redux/recipeSlice";
 import { RecipeAppBar } from "../components/RecipeAppBar";
-import { Accordion, AccordionDetails, AccordionSummary, Backdrop, Box, Button, CircularProgress, Fade, Grid, LinearProgress, List, Modal, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Backdrop, Box, Button, CircularProgress, Fade, Grid, LinearProgress, List, Modal, SxProps, Typography } from "@mui/material";
 import { RecipeStats } from "../components/RecipeStats";
 import DOMPurify from "dompurify";
 import parse from 'html-react-parser';
@@ -61,11 +61,11 @@ export const RecipeSelected = () => {
 
 
     return (
-        <Box display="flex" flexDirection="column" height="100vh">
+        <Box display="flex" flexDirection="column" sx={{ height: {xs: '100%', lg: "100vh"}}} >
             <RecipeAppBar />
             <Toaster />
-            <Grid container spacing={0} width="100%" height="calc(100% - 64px)" direction="row" flexWrap="nowrap" justifyContent="center" alignItems="center" margin="0px" paddingLeft="15px">
-                <Grid item width="30%" height="100%" paddingTop="10px" paddingBottom="7px">
+            <Grid container spacing={0} sx={gridContainer}>
+                <Grid item sx={gridItemTitle}>
                     <Box display="flex" flexDirection="column" justifyContent="flex-start" height="100%">
                         <Box display="flex" flexDirection="row" height="20%">
                             <Typography variant="h2">{recipeData?.title}</Typography>
@@ -128,13 +128,13 @@ export const RecipeSelected = () => {
                         </Box>
                     </Box>
                 </Grid>
-                <Grid item xs={12} md={2} height="100%" alignContent="center" alignItems="center" justifyContent="center">
+                <Grid item xs={12} md={2} sx={gridItemStats}>
                     <RecipeStats minutesNeeded={recipeData ? recipeData.minutesNeeded : NaN} difficulty={recipeData ? recipeData.difficulty : "?"} views={recipeData ? recipeData.views : NaN} />
                 </Grid>
-                <Grid item xs={12} md={7} height="100%" justifyContent="center" alignItems="center" paddingLeft="25px" paddingRight="25px" sx={{ backgroundColor: '#3B2F2F'}}>
+                <Grid item xs={12} md={7} sx={gridItemPreparation}>
                     <Box height="100%" display="flex" flexDirection="column" justifyContent="space-around">
-                        <Box width="100%" height="50%" display="flex" justifyContent="center">
-                            <img height="100%" src={recipeData?.imageURL} alt={recipeData?.title} />
+                        <Box sx={boxContainerImage}>
+                            <img src={recipeData?.imageURL} alt={recipeData?.title} style={recipeImageStyle}/>
                         </Box>
                         <Box border="2px solid #4e342e" padding="15px 20px" borderRadius="17px" sx={{ backgroundColor: "#FFF7EE", overflowY: "auto" }}>
                             <Typography variant="h5" textAlign="center" marginBottom="5px">Preparation</Typography>
@@ -150,7 +150,7 @@ export const RecipeSelected = () => {
 }
 
 
-const ingredientBoxStyle = { 
+const ingredientBoxStyle: SxProps = { 
     maxHeight: '60vh', 
     border: `2px solid ${colors.primary}`, 
     borderRadius: "15px", 
@@ -170,7 +170,7 @@ const ingredientBoxStyle = {
     },
 }
 
-const modalStyle = {
+const modalStyle: SxProps = {
     position: 'absolute',
     top: '50%',
     left: '50%',
@@ -181,3 +181,54 @@ const modalStyle = {
     boxShadow: 0,
     p: 4,
   };
+  
+const gridContainer: SxProps = {
+    width: "100%",
+    height: "calc(100% - 64px)",
+    flexDirection: { xs: "column", lg: "row" },
+    flexWrap: "nowrap",
+    justifyContent: "center",
+    alignItems: "center",
+    margin: "0px",
+    paddingLeft: { xs: "0px", lg: "15px" }
+}
+
+const gridItemTitle: SxProps = {
+    order: { xs: 2, lg: 1 },
+    width: { xs: "92%", lg: "30%" },
+    height: "100%",
+    paddingTop: "10px", 
+    paddingBottom: "7px"
+}
+
+const gridItemStats: SxProps = {
+    order: { xs: 1, lg: 2 },
+    height: "100%", 
+    alignContent: "center", 
+    alignItems: "center", 
+    justifyContent: "center"
+}
+
+const gridItemPreparation: SxProps = {
+    order: 3,
+    height: "100%",
+    justifyContent: "center", 
+    alignItems: "center",
+    paddingLeft: "25px",
+    paddingRight: "25px",
+    backgroundColor: '#3B2F2F'
+}
+
+const boxContainerImage: SxProps = {
+    width: "100%",
+    height: "50%",
+    display: "flex",
+    justifyContent: "center"
+}
+
+const recipeImageStyle: CSSProperties = {
+    width: "100%",
+    height: "100%",
+    border: "1px transparent",
+    borderRadius: "25px"
+}
