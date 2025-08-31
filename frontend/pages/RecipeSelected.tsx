@@ -128,7 +128,7 @@ export const RecipeSelected = () => {
                         </Box>
                     </Box>
                 </Grid>
-                <Grid item xs={12} md={2} sx={gridItemStats}>
+                <Grid item height="100%" xs={12} md={2} sx={gridItemStats}>
                     <RecipeStats minutesNeeded={recipeData ? recipeData.minutesNeeded : NaN} difficulty={recipeData ? recipeData.difficulty : "?"} views={recipeData ? recipeData.views : NaN} />
                 </Grid>
                 <Grid item xs={12} md={7} sx={gridItemPreparation}>

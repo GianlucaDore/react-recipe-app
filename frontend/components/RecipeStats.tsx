@@ -94,12 +94,12 @@ export const RecipeStats = (props: RecipeStatsProps) => {
     
     return (
         <>
-            <Stack textAlign="center" justifyContent="center" alignItems="center" spacing={{ xs: 1, sm: 2, md: 4 }} direction={{ xs: 'row', sm: 'row', md: 'column' }} >
-                <Box width="60%" padding="20px" border={`2px solid ${colors.primary}`} borderRadius="13px" sx={{ backgroundColor: colors.tertiary }}>
+            <Stack textAlign="center" height="100%" justifyContent="center" alignItems="center" spacing={{ xs: 1, sm: 2, md: 4 }} direction={{ xs: 'row', sm: 'row', md: 'column' }} >
+                <Box width="60%" padding="15px" border={`2px solid ${colors.primary}`} borderRadius="13px" sx={{ backgroundColor: colors.tertiary }}>
                     <AccessAlarm />
                     <Typography>Preparation:<br /><b>{minutesNeeded} min</b></Typography>
                 </Box>
-                <Box width="60%" padding="20px" border={`2px solid ${colors.primary}`} borderRadius="13px" sx={{ backgroundColor: colors.tertiary }}>
+                <Box width="60%" padding="15px" border={`2px solid ${colors.primary}`} borderRadius="13px" sx={{ backgroundColor: colors.tertiary }}>
                     <Psychology />
                     <Typography>Difficulty:<br /><b>{difficulty}</b></Typography>
                 </Box>
@@ -108,19 +108,21 @@ export const RecipeStats = (props: RecipeStatsProps) => {
                         <Favorite sx={{ color: userLikesIt ? colors.likePrimary : colors.primary }} />
                         <Typography color={userLikesIt ? colors.likePrimary : colors.primary}>
                             Likes:<br />
-                            <b>{userLikesIt ? (
+                            {userLikesIt ? (
                                 (recipeData && recipeData?.likedBy.length > 1) ?
                                     <Typography onClick={handleOpenLikedBy} component="p" sx={{ textDecoration: "underline", '&:hover': { fontWeight: "900" } }}>
                                         You and {recipeData.likes - 1} {recipeData.likes > 2 ? "others" : "other"} like this.
                                     </Typography>
                                     : <Typography component="p">You like this.</Typography>
                             ) : (
-                                <Typography>{recipeData ? recipeData.likes : "NaN"}</Typography>
-                            )}</b>
+                                    <Box component="b" sx={{ fontWeight: 700 }}>
+                                        {recipeData ? recipeData.likes : "NaN"}
+                                    </Box>
+                            )}
                         </Typography>
                     </Button>
                 </Box>
-                <Box width="60%" padding="20px" border={`2px solid ${colors.primary}`} borderRadius="13px" sx={{ backgroundColor: colors.tertiary }}>
+                <Box width="60%" padding="15px" border={`2px solid ${colors.primary}`} borderRadius="13px" sx={{ backgroundColor: colors.tertiary }}>
                     <Visibility />
                     <Typography>Views:<br /><b>{views}</b></Typography>
                 </Box>
@@ -183,6 +185,7 @@ const likeButtonStyle = {
     justifyContent: "center",
     alignItems: "center",
     rowGap: "8px",
+    textTransform: "none",
     '&:hover': {
         backgroundColor: colors.likeSecondary
     },
@@ -200,7 +203,8 @@ const unlikeButtonStyle = {
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    rowGap: "8px"
+    rowGap: "8px",
+    textTransform: "none",
 }
 
 const doesUserLikeCurrentRecipe = (userLoggedInUid: string | undefined, likedBy: Array<string> | undefined) : boolean => {
